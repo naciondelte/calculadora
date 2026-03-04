@@ -16,10 +16,31 @@ body{margin:0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;backgrou
 input,select,button{padding:10px;border-radius:8px;border:1px solid #ddd;font-size:14px}
 button{background:var(--primary);color:white;border:none;cursor:pointer;font-weight:bold}
 .small-btn{padding:6px 10px;font-size:13px}
+
 .mem-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:20px}
-.mem-card{background:#eaeaea;padding:10px;border-radius:10px;text-align:center;cursor:grab;user-select:none}
-.mem-card:active{cursor:grabbing}
+
+.mem-card{
+  background:#eaeaea;
+  padding:10px;
+  border-radius:10px;
+  text-align:center;
+  cursor:default;
+  user-select:none;
+  transition:transform .2s ease, background .2s ease;
+}
+
+.mem-card.dragging{
+  opacity:0.6;
+  cursor:grabbing;
+  transform:scale(1.05);
+}
+
+.mem-card.over{
+  transform:translateY(6px);
+}
+
 body.dark .mem-card{background:#2a2a2a}
+
 .volume-row{display:flex;gap:10px;align-items:center;margin-bottom:20px}
 .volume-row input{flex:1}
 .switch-row{display:flex;align-items:center;gap:10px;margin:10px 0}
@@ -29,9 +50,11 @@ body.dark .mem-card{background:#2a2a2a}
 .modal.hidden{display:none}
 .modal-content{background:white;padding:20px;border-radius:12px;width:320px}
 body.dark .modal-content{background:#1e1e1e;color:white}
+
 .footer{margin-top:50px;text-align:center;font-size:15px}
 .footer a{color:var(--primary);text-decoration:underline;font-weight:600}
 .footer span{display:block;margin-top:5px;font-size:13px;opacity:0.8}
+
 .auth-box{margin-bottom:20px}
 </style>
 </head>
@@ -117,8 +140,8 @@ Aprende más sobre el té y el método Gong Fu Cha en nuestro Instagram @naciond
 <input type="text" id="nombreTetera" placeholder="Nombre">
 <input type="number" id="modalVol" placeholder="Volumen (ml)">
 <div style="margin-top:10px;display:flex;gap:10px">
-<button onclick="guardarMemoria()" id="saveBtn">Aceptar</button>
-<button onclick="eliminarMemoria()" id="deleteBtn" style="background:#c0392b">Eliminar</button>
+<button onclick="guardarMemoria()">Aceptar</button>
+<button onclick="eliminarMemoria()" style="background:#c0392b">Eliminar</button>
 </div>
 <button onclick="cerrarModal()" style="margin-top:10px;background:gray">Cancelar</button>
 </div>
@@ -173,8 +196,24 @@ function render(){
     div.onclick=()=>{volumen.value=m.vol;calcular()};
     div.ondblclick=()=>abrirModalEdicion(m);
 
-    div.ondragstart=()=>dragId=m.id;
+    div.ondragstart=()=>{
+      dragId=m.id;
+      div.classList.add("dragging");
+    };
+
+    div.ondragend=()=>{
+      div.classList.remove("dragging");
+      document.querySelectorAll('.mem-card').forEach(c=>c.classList.remove('over'));
+    };
+
     div.ondragover=e=>e.preventDefault();
+
+    div.ondragenter=()=>{
+      if(m.id!==dragId) div.classList.add("over");
+    };
+
+    div.ondragleave=()=>div.classList.remove("over");
+
     div.ondrop=()=>reordenar(m.id);
 
     cont.appendChild(div);
@@ -183,14 +222,17 @@ function render(){
 
 async function reordenar(targetId){
   if(dragId===targetId)return;
+
   const fromIndex=memorias.findIndex(m=>m.id===dragId);
   const toIndex=memorias.findIndex(m=>m.id===targetId);
+
   const moved=memorias.splice(fromIndex,1)[0];
   memorias.splice(toIndex,0,moved);
 
   for(let i=0;i<memorias.length;i++){
     await updateDoc(doc(db,"usuarios",user.uid,"teteras",memorias[i].id),{orden:i});
   }
+
   cargarMemorias();
 }
 
@@ -199,7 +241,6 @@ window.abrirModal=()=>{
   modalTitle.innerText="Guardar Tetera";
   nombreTetera.value="";
   modalVol.value=volumen.value;
-  deleteBtn.style.display="none";
   modal.classList.remove("hidden");
 }
 
@@ -208,7 +249,6 @@ function abrirModalEdicion(m){
   modalTitle.innerText="Editar Tetera";
   nombreTetera.value=m.nombre;
   modalVol.value=m.vol;
-  deleteBtn.style.display="block";
   modal.classList.remove("hidden");
 }
 
