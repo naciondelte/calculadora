@@ -10,14 +10,15 @@
 <style>
 :root{--bg:#f4f6fb;--card:#ffffff;--text:#222;--primary:#667eea}
 body.dark{--bg:#121212;--card:#1e1e1e;--text:#f5f5f5}
-body{margin:0;font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--text);padding:20px}
+body{margin:0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);padding:20px}
 .container{max-width:800px;margin:auto;background:var(--card);padding:30px;border-radius:20px;box-shadow:0 20px 40px rgba(0,0,0,0.15)}
 .top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
 input,select,button{padding:10px;border-radius:8px;border:1px solid #ddd;font-size:14px}
 button{background:var(--primary);color:white;border:none;cursor:pointer;font-weight:bold}
 .small-btn{padding:6px 10px;font-size:13px}
 .mem-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:20px}
-.mem-card{background:#eaeaea;padding:10px;border-radius:10px;text-align:center;cursor:pointer}
+.mem-card{background:#eaeaea;padding:10px;border-radius:10px;text-align:center;cursor:grab;user-select:none}
+.mem-card:active{cursor:grabbing}
 body.dark .mem-card{background:#2a2a2a}
 .volume-row{display:flex;gap:10px;align-items:center;margin-bottom:20px}
 .volume-row input{flex:1}
@@ -28,9 +29,9 @@ body.dark .mem-card{background:#2a2a2a}
 .modal.hidden{display:none}
 .modal-content{background:white;padding:20px;border-radius:12px;width:320px}
 body.dark .modal-content{background:#1e1e1e;color:white}
-.footer{margin-top:40px;text-align:center;font-size:14px}
-.footer a{color:var(--primary);text-decoration:none;font-weight:bold}
-.footer p{margin:10px 0}
+.footer{margin-top:50px;text-align:center;font-size:15px}
+.footer a{color:var(--primary);text-decoration:underline;font-weight:600}
+.footer span{display:block;margin-top:5px;font-size:13px;opacity:0.8}
 .auth-box{margin-bottom:20px}
 </style>
 </head>
@@ -94,8 +95,19 @@ Conectado como <strong id="userEmail"></strong>
 </div>
 
 <div class="footer">
-<p><a href="https://www.instagram.com/naciondelte/" target="_blank">Aprende más sobre el té y el método Gong Fu Cha en nuestro Instagram @naciondelte</a></p>
-<p><a href="https://discord.gg/mjzhCXBRW" target="_blank">Únete a nuestra comunidad del té en español y comparte con más gente amante del té en nuestro Discord</a></p>
+<p>
+<a href="https://www.instagram.com/naciondelte/" target="_blank">
+Aprende más sobre el té y el método Gong Fu Cha en nuestro Instagram @naciondelte
+</a>
+<span>Haz clic aquí para visitarnos</span>
+</p>
+
+<p>
+<a href="https://discord.gg/mjzhCXBRW" target="_blank">
+Únete a nuestra comunidad del té en español y comparte con más gente amante del té en nuestro Discord
+</a>
+<span>Haz clic aquí para unirte</span>
+</p>
 </div>
 </div>
 
@@ -129,6 +141,7 @@ const provider=new GoogleAuthProvider();
 let user=null;
 let memorias=[];
 let editId=null;
+let dragId=null;
 
 onAuthStateChanged(auth,async(u)=>{
   if(u){user=u;authSection.classList.add("hidden");app.classList.remove("hidden");userEmail.innerText=u.email;cargarMemorias()}else{authSection.classList.remove("hidden");app.classList.add("hidden")}
@@ -150,14 +163,35 @@ async function cargarMemorias(){
 function render(){
   const cont=document.getElementById("memorias");
   cont.innerHTML="";
+
   memorias.forEach(m=>{
     const div=document.createElement("div");
     div.className="mem-card";
+    div.draggable=true;
     div.textContent=`${m.nombre} (${m.vol}ml)`;
+
     div.onclick=()=>{volumen.value=m.vol;calcular()};
     div.ondblclick=()=>abrirModalEdicion(m);
+
+    div.ondragstart=()=>dragId=m.id;
+    div.ondragover=e=>e.preventDefault();
+    div.ondrop=()=>reordenar(m.id);
+
     cont.appendChild(div);
   });
+}
+
+async function reordenar(targetId){
+  if(dragId===targetId)return;
+  const fromIndex=memorias.findIndex(m=>m.id===dragId);
+  const toIndex=memorias.findIndex(m=>m.id===targetId);
+  const moved=memorias.splice(fromIndex,1)[0];
+  memorias.splice(toIndex,0,moved);
+
+  for(let i=0;i<memorias.length;i++){
+    await updateDoc(doc(db,"usuarios",user.uid,"teteras",memorias[i].id),{orden:i});
+  }
+  cargarMemorias();
 }
 
 window.abrirModal=()=>{
