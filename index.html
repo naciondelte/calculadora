@@ -207,16 +207,26 @@ async function cargarMemorias(){
 }
 
 function render(){
-  memoriasDiv.innerHTML="";
-  memorias.forEach(m=>{
-    const div=document.createElement("div");
-    div.className="mem-card";
-    div.draggable=true;
-    div.textContent=`${m.nombre} (${m.vol}ml)`;
-    div.onclick=()=>{volumen.value=m.vol;calcular();};
-    div.ondragstart=()=>dragId=m.id;
-    div.ondragover=e=>e.preventDefault();
-    div.ondrop=()=>reordenar(m.id);
+  const memoriasDiv = document.getElementById("memorias");
+  if(!memoriasDiv) return;
+
+  memoriasDiv.innerHTML = "";
+
+  memorias.forEach(m => {
+    const div = document.createElement("div");
+    div.className = "mem-card";
+    div.draggable = true;
+    div.textContent = `${m.nombre} (${m.vol}ml)`;
+
+    div.onclick = () => {
+      document.getElementById("volumen").value = m.vol;
+      calcular();
+    };
+
+    div.ondragstart = () => dragId = m.id;
+    div.ondragover = e => e.preventDefault();
+    div.ondrop = () => reordenar(m.id);
+
     memoriasDiv.appendChild(div);
   });
 }
