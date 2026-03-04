@@ -11,43 +11,124 @@
 :root{--bg:#f4f6fb;--card:#ffffff;--text:#222;--primary:#667eea}
 body.dark{--bg:#121212;--card:#1e1e1e;--text:#f5f5f5}
 body{margin:0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);padding:20px}
-.container{max-width:800px;margin:auto;background:var(--card);padding:30px;border-radius:20px;box-shadow:0 20px 40px rgba(0,0,0,0.15)}
+.container{max-width:900px;margin:auto;background:var(--card);padding:30px;border-radius:20px;box-shadow:0 20px 40px rgba(0,0,0,0.15)}
+h2,h3{margin-top:0}
 
-.mem-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:20px}
+.mem-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:20px}
 
 .mem-card{
   background:#eaeaea;
-  padding:10px;
-  border-radius:10px;
+  padding:12px;
+  border-radius:12px;
   text-align:center;
   cursor:default;
   user-select:none;
-  transition:transform .25s ease;
+  transition:transform .25s ease, box-shadow .25s ease;
 }
 
 .mem-card.dragging{
-  opacity:.6;
+  opacity:.85;
   cursor:grabbing;
-  z-index:10;
+  box-shadow:0 15px 25px rgba(0,0,0,.25);
+  transform:scale(1.05);
+  z-index:1000;
 }
 
 body.dark .mem-card{background:#2a2a2a}
 
+input,select,button{padding:10px;border-radius:8px;border:1px solid #ddd;font-size:14px}
+button{background:var(--primary);color:white;border:none;font-weight:bold;cursor:pointer}
+
+.volume-row{display:flex;gap:10px;margin-bottom:20px}
+.volume-row input{flex:1}
+
+.result-box{background:var(--primary);color:white;padding:20px;border-radius:12px;margin-top:20px}
+
+.footer{margin-top:50px;text-align:center;font-size:15px}
+.footer a{color:var(--primary);text-decoration:underline;font-weight:600}
+.footer span{display:block;margin-top:5px;font-size:13px;opacity:0.8}
+
 .hidden{display:none}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;justify-content:center;align-items:center}
+.modal.hidden{display:none}
+.modal-content{background:white;padding:20px;border-radius:12px;width:320px}
+body.dark .modal-content{background:#1e1e1e;color:white}
 </style>
 </head>
 <body>
 
 <div class="container">
 <h2>🍵 Gong Fu Cha</h2>
+
 <h3>Mis Teteras</h3>
 <div id="memorias" class="mem-grid"></div>
+
+<h3>Volumen</h3>
+<div class="volume-row">
+<input type="number" id="volumen" value="100" oninput="calcular()">
+<button onclick="abrirModal()">Guardar Tetera</button>
+</div>
+
+<h3>Tipo de Té</h3>
+<select id="tipoTe" onchange="calcular()">
+<option value="5">Blanco (5 g/110ml)</option>
+<option value="4">Verde (4 g/110ml)</option>
+<option value="6">Amarillo (6 g/110ml)</option>
+<option value="7" selected>Oolong (7 g/110ml)</option>
+<option value="8">Pu erh Sheng (8 g/110ml)</option>
+<option value="10">Pu erh Shou (10 g/110ml)</option>
+<option value="6">Negro (6 g/110ml)</option>
+</select>
+
+<div style="margin:10px 0">
+<label>Ratio manual</label>
+<input type="checkbox" id="ratioSwitch" onchange="toggleManual()">
+</div>
+
+<div id="manualBox" class="hidden">
+<input type="number" id="manualGr" placeholder="Gramos de té" oninput="calcular()">
+<input type="number" id="manualMl" placeholder="ml de agua" oninput="calcular()">
+</div>
+
+<div class="result-box">
+<p>Gramos de té: <strong id="gramos">0</strong> g</p>
+<p>Agua útil: <strong id="agua">0</strong> ml</p>
+<p>Temperatura recomendada: <strong id="temp">-</strong></p>
+</div>
+
+<div class="footer">
+<p>
+<a href="https://www.instagram.com/naciondelte/" target="_blank">
+Aprende más sobre el té y el método Gong Fu Cha en nuestro Instagram @naciondelte
+</a>
+<span>Haz clic aquí para visitarnos</span>
+</p>
+<p>
+<a href="https://discord.gg/mjzhCXBRW" target="_blank">
+Únete a nuestra comunidad del té en español y comparte con más gente amante del té en nuestro Discord
+</a>
+<span>Haz clic aquí para unirte</span>
+</p>
+</div>
+</div>
+
+<div id="modal" class="modal hidden">
+<div class="modal-content">
+<h3 id="modalTitle">Guardar Tetera</h3>
+<input type="text" id="nombreTetera" placeholder="Nombre">
+<input type="number" id="modalVol" placeholder="Volumen (ml)">
+<div style="margin-top:10px;display:flex;gap:10px">
+<button onclick="guardarMemoria()">Aceptar</button>
+<button onclick="eliminarMemoria()" style="background:#c0392b">Eliminar</button>
+</div>
+<button onclick="cerrarModal()" style="margin-top:10px;background:gray">Cancelar</button>
+</div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, getDocs, updateDoc, doc, query, orderBy }
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc, query, orderBy }
 from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig={apiKey:"AIzaSyAnCT6glmf4n1zxzHJoHx4Z9l7yR0jju1I",authDomain:"calc-gong-fu.firebaseapp.com",projectId:"calc-gong-fu"};
@@ -59,88 +140,150 @@ const db=getFirestore(appFirebase);
 let user=null;
 let memorias=[];
 let dragId=null;
+let editId=null;
 
 onAuthStateChanged(auth,async(u)=>{
-  if(u){user=u;cargarMemorias();}
+ if(u){user=u;cargarMemorias();}
 });
 
 async function cargarMemorias(){
-  memorias=[];
-  const q=query(collection(db,"usuarios",user.uid,"teteras"),orderBy("orden"));
-  const snap=await getDocs(q);
-  snap.forEach(d=>memorias.push({...d.data(),id:d.id}));
-  render();
+ memorias=[];
+ const q=query(collection(db,"usuarios",user.uid,"teteras"),orderBy("orden"));
+ const snap=await getDocs(q);
+ snap.forEach(d=>memorias.push({...d.data(),id:d.id}));
+ render();
 }
 
 function render(){
-  const cont=document.getElementById("memorias");
+ const cont=document.getElementById("memorias");
 
-  // FLIP - First
-  const firstPositions={};
-  [...cont.children].forEach(el=>{
-    firstPositions[el.dataset.id]=el.getBoundingClientRect();
-  });
+ const first={};
+ [...cont.children].forEach(el=>{
+   first[el.dataset.id]=el.getBoundingClientRect();
+ });
 
-  cont.innerHTML="";
+ cont.innerHTML="";
 
-  memorias.forEach(m=>{
-    const div=document.createElement("div");
-    div.className="mem-card";
-    div.draggable=true;
-    div.dataset.id=m.id;
-    div.textContent=`${m.nombre} (${m.vol}ml)`;
+ memorias.forEach(m=>{
+   const div=document.createElement("div");
+   div.className="mem-card";
+   div.draggable=true;
+   div.dataset.id=m.id;
+   div.textContent=`${m.nombre} (${m.vol}ml)`;
 
-    div.ondragstart=()=>{
-      dragId=m.id;
-      div.classList.add("dragging");
-    };
+   div.onclick=()=>{volumen.value=m.vol;calcular()};
+   div.ondblclick=()=>abrirModalEdicion(m);
 
-    div.ondragend=()=>{
-      div.classList.remove("dragging");
-    };
+   div.ondragstart=()=>{
+     dragId=m.id;
+     div.classList.add("dragging");
+   };
 
-    div.ondragover=e=>e.preventDefault();
-    div.ondrop=()=>reordenar(m.id);
+   div.ondragend=()=>{
+     div.classList.remove("dragging");
+   };
 
-    cont.appendChild(div);
-  });
+   div.ondragover=e=>{
+     e.preventDefault();
+     const overId=m.id;
+     if(dragId!==overId){
+       const from=memorias.findIndex(x=>x.id===dragId);
+       const to=memorias.findIndex(x=>x.id===overId);
+       const moved=memorias.splice(from,1)[0];
+       memorias.splice(to,0,moved);
+       render();
+     }
+   };
 
-  // FLIP - Last + Invert + Play
-  [...cont.children].forEach(el=>{
-    const id=el.dataset.id;
-    if(!firstPositions[id]) return;
+   cont.appendChild(div);
+ });
 
-    const last=el.getBoundingClientRect();
-    const first=firstPositions[id];
-
-    const dx=first.left-last.left;
-    const dy=first.top-last.top;
-
-    if(dx||dy){
-      el.style.transform=`translate(${dx}px, ${dy}px)`;
-      requestAnimationFrame(()=>{
-        el.style.transform="";
-      });
-    }
-  });
+ [...cont.children].forEach(el=>{
+   const id=el.dataset.id;
+   if(!first[id]) return;
+   const last=el.getBoundingClientRect();
+   const dx=first[id].left-last.left;
+   const dy=first[id].top-last.top;
+   if(dx||dy){
+     el.style.transform=`translate(${dx}px,${dy}px)`;
+     requestAnimationFrame(()=>el.style.transform="");
+   }
+ });
 }
 
-async function reordenar(targetId){
-  if(dragId===targetId)return;
-
-  const fromIndex=memorias.findIndex(m=>m.id===dragId);
-  const toIndex=memorias.findIndex(m=>m.id===targetId);
-
-  const moved=memorias.splice(fromIndex,1)[0];
-  memorias.splice(toIndex,0,moved);
-
-  render(); // animación inmediata tipo Trello
-
-  for(let i=0;i<memorias.length;i++){
-    await updateDoc(doc(db,"usuarios",user.uid,"teteras",memorias[i].id),{orden:i});
-  }
+async function guardarOrden(){
+ for(let i=0;i<memorias.length;i++){
+   await updateDoc(doc(db,"usuarios",user.uid,"teteras",memorias[i].id),{orden:i});
+ }
 }
 
+window.abrirModal=()=>{
+ editId=null;
+ modalTitle.innerText="Guardar Tetera";
+ nombreTetera.value="";
+ modalVol.value=volumen.value;
+ modal.classList.remove("hidden");
+}
+
+function abrirModalEdicion(m){
+ editId=m.id;
+ modalTitle.innerText="Editar Tetera";
+ nombreTetera.value=m.nombre;
+ modalVol.value=m.vol;
+ modal.classList.remove("hidden");
+}
+
+window.cerrarModal=()=>modal.classList.add("hidden");
+
+window.guardarMemoria=async()=>{
+ const nombre=nombreTetera.value.trim();
+ const vol=parseFloat(modalVol.value);
+ if(!nombre||!vol)return;
+ if(editId){
+   await updateDoc(doc(db,"usuarios",user.uid,"teteras",editId),{nombre,vol});
+ }else{
+   await addDoc(collection(db,"usuarios",user.uid,"teteras"),{nombre,vol,orden:memorias.length});
+ }
+ cerrarModal();
+ cargarMemorias();
+}
+
+window.eliminarMemoria=async()=>{
+ if(!editId)return;
+ await deleteDoc(doc(db,"usuarios",user.uid,"teteras",editId));
+ cerrarModal();
+ cargarMemorias();
+}
+
+window.toggleManual=()=>manualBox.classList.toggle("hidden");
+
+window.calcular=()=>{
+ const vol=parseFloat(volumen.value);
+ let ratio;
+ if(ratioSwitch.checked){
+   const g=parseFloat(manualGr.value);
+   const ml=parseFloat(manualMl.value);
+   if(g&&ml)ratio=g/ml;
+ }else{ratio=parseFloat(tipoTe.value)/110}
+ if(!ratio)return;
+ const desp=3.2;
+ const gCalc=(vol*ratio)/(1+ratio*desp);
+ const aCalc=vol-(gCalc*desp);
+ gramos.innerText=gCalc.toFixed(2);
+ agua.innerText=aCalc.toFixed(2);
+ const temps={
+   "Blanco (5 g/110ml)":"85-95°C",
+   "Verde (4 g/110ml)":"80-85°C",
+   "Amarillo (6 g/110ml)":"80-90°C",
+   "Oolong (7 g/110ml)":"100°C",
+   "Pu erh Sheng (8 g/110ml)":"95°C",
+   "Pu erh Shou (10 g/110ml)":"100°C",
+   "Negro (6 g/110ml)":"95°C"
+ };
+ temp.innerText=temps[tipoTe.options[tipoTe.selectedIndex].text];
+}
+
+calcular();
 </script>
 
 </body>
