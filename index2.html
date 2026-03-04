@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora Gong Fu Cha</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#667eea">
+
+<style>
+:root {
+  --bg: #f4f6fb;
+  --card: #ffffff;
+  --text: #222;
+  --primary: #667eea;
+}
+
+body.dark {
+  --bg: #121212;
+  --card: #1e1e1e;
+  --text: #f5f5f5;
+}
+
+body {
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  padding:20px;
+  transition:0.3s;
+}
+
+.container {
+  max-width:700px;
+  margin:auto;
+  background:var(--card);
+  padding:30px;
+  border-radius:20px;
+  box-shadow:0 20px 40px rgba(0,0,0,0.15);
+}
+
+.top-bar {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+input, select, button {
+  width:100%;
+  padding:12px;
+  margin-top:8px;
+  margin-bottom:15px;
+  border-radius:8px;
+  border:1px solid #ddd;
+  font-size:16px;
+}
+
+button {
+  background:var(--primary);
+  color:white;
+  font-weight:bold;
+  border:none;
+  cursor:pointer;
+}
+
+button:hover { opacity:0.9; }
+
+.small-btn {
+  width:auto;
+  padding:8px 12px;
+  font-size:14px;
+}
+
+.tetera-item {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  background:#eaeaea;
+  padding:10px;
+  border-radius:8px;
+  margin-bottom:8px;
+}
+
+.tetera-item span {
+  cursor:pointer;
+  flex:1;
+}
+
+.tetera-item button {
+  width:auto;
+  padding:6px 10px;
+  margin:0;
+}
+
+body.dark .tetera-item { background:#2a2a2a; }
+
+.result-box {
+  background:var(--primary);
+  color:white;
+  padding:20px;
+  border-radius:12px;
+  margin-top:20px;
+}
+
+.hidden { display:none; }
+
+.fake-user {
+  background:#eaeaea;
+  padding:10px;
+  border-radius:8px;
+  margin-bottom:15px;
+}
+
+body.dark .fake-user { background:#2a2a2a; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<div class="top-bar">
+<h2>🍵 Gong Fu Cha</h2>
+<button class="small-btn" onclick="toggleDark()">🌙</button>
+</div>
+
+<div id="authSection">
+<h3>Login</h3>
+<input type="email" id="emailInput" placeholder="Email">
+<input type="password" id="passwordInput" placeholder="Password">
+<button onclick="login()">Iniciar sesión</button>
+<button onclick="registrar()">Registrarse</button>
+<button style="background:#db4437" onclick="loginGoogle()">Login con Google</button>
+</div>
+
+<div id="appSection" class="hidden">
+<div class="fake-user">
+Conectado como <strong id="userEmail"></strong>
+<button class="small-btn" onclick="logout()">Salir</button>
+</div>
+
+<h3>Volumen (ml)</h3>
+<input type="number" id="volumenTetera" value="100" oninput="calcular()">
+
+<h3>Guardar Tetera</h3>
+<input type="text" id="nombreTetera" placeholder="Nombre">
+<button onclick="guardarTetera()">Guardar</button>
+
+<h3>Mis Teteras</h3>
+<div id="listaTeteras"></div>
+
+<h3>Tipo de Té</h3>
+<select id="tipoTe" onchange="calcular()">
+<option value="5">Blanco</option>
+<option value="4">Verde</option>
+<option value="7" selected>Oolong</option>
+<option value="8">Pu erh Sheng</option>
+<option value="10">Pu erh Shou</option>
+<option value="5">Negro</option>
+</select>
+
+<div class="result-box">
+<p>Gramos: <strong id="gramosResultado">0</strong> g</p>
+<p>Agua útil: <strong id="aguaResultado">0</strong> ml</p>
+<p>Temperatura recomendada: <strong id="temperaturaResultado">-</strong></p>
+</div>
+
+</div>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup }
+from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc }
+from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// 🔥 REEMPLAZA ESTO CON TU CONFIG DE FIREBASE
+const firebaseConfig = {
+  apiKey: "AIzaSyAnCT6glmf4n1zxzHJoHx4Z9l7yR0jju1I",
+  authDomain: "calc-gong-fu.firebaseapp.com",
+  projectId: "calc-gong-fu",
+  storageBucket: "calc-gong-fu.firebasestorage.app",
+  messagingSenderId: "112038141907",
+  appId: "1:112038141907:web:dcffd7d691db0acb4e1926"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const provider = new GoogleAuthProvider();
+
+let usuarioActual = null;
+
+onAuthStateChanged(auth,(user)=>{
+  if(user){
+    usuarioActual=user;
+    authSection.classList.add("hidden");
+    appSection.classList.remove("hidden");
+    userEmail.innerText=user.email;
+    cargarTeteras();
+  }else{
+    authSection.classList.remove("hidden");
+    appSection.classList.add("hidden");
+  }
+});
+
+window.registrar=()=>createUserWithEmailAndPassword(auth,emailInput.value,passwordInput.value);
+window.login=()=>signInWithEmailAndPassword(auth,emailInput.value,passwordInput.value);
+window.loginGoogle=()=>signInWithPopup(auth,provider);
+window.logout=()=>signOut(auth);
+
+window.guardarTetera=async()=>{
+  if(!nombreTetera.value||!volumenTetera.value) return;
+  await addDoc(collection(db,"usuarios",usuarioActual.uid,"teteras"),{
+    nombre:nombreTetera.value,
+    volumen:parseFloat(volumenTetera.value)
+  });
+  nombreTetera.value="";
+  cargarTeteras();
+};
+
+async function cargarTeteras(){
+  listaTeteras.innerHTML="";
+  const snapshot=await getDocs(collection(db,"usuarios",usuarioActual.uid,"teteras"));
+  snapshot.forEach(d=>{
+    const data=d.data();
+    const div=document.createElement("div");
+    div.className="tetera-item";
+    div.innerHTML=`
+      <span onclick="volumenTetera.value=${data.volumen};calcular()">
+      ${data.nombre} (${data.volumen}ml)
+      </span>
+      <button onclick="eliminarTetera('${d.id}')">🗑</button>
+    `;
+    listaTeteras.appendChild(div);
+  });
+}
+
+window.eliminarTetera=async(id)=>{
+  await deleteDoc(doc(db,"usuarios",usuarioActual.uid,"teteras",id));
+  cargarTeteras();
+};
+
+window.calcular=()=>{
+  const volumen=parseFloat(volumenTetera.value);
+  const ratio=parseFloat(tipoTe.value);
+  const tipoTexto=tipoTe.options[tipoTe.selectedIndex].text;
+
+  const temperaturas={
+    "Blanco":"85-95°C",
+    "Verde":"85°C",
+    "Oolong":"100°C",
+    "Pu erh Sheng":"95°C",
+    "Pu erh Shou":"100°C",
+    "Negro":"90°C"
+  };
+
+  const ratioMl=ratio/110;
+  const desplazamiento=3.2;
+  const gramos=(volumen*ratioMl)/(1+ratioMl*desplazamiento);
+  const agua=volumen-(gramos*desplazamiento);
+
+  gramosResultado.innerText=gramos.toFixed(2);
+  aguaResultado.innerText=agua.toFixed(2);
+  temperaturaResultado.innerText=temperaturas[tipoTexto]||"-";
+};
+
+window.toggleDark=()=>{
+  document.body.classList.toggle("dark");
+  localStorage.setItem("darkMode",document.body.classList.contains("dark"));
+};
+
+if(localStorage.getItem("darkMode")==="true"){
+  document.body.classList.add("dark");
+}
+
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("service-worker.js");
+}
+
+calcular();
+</script>
+
+</body>
+</html>
