@@ -1080,10 +1080,13 @@ calcular();
 
 let selectedIcon="";
 
-const iconBtn=document.getElementById("iconSelector");
-const iconMenu=document.getElementById("iconMenu");
+const iconBtn = document.getElementById("iconSelector");
+const iconMenu = document.getElementById("iconMenu");
+const preview = document.getElementById("previewIcon");
 
-iconBtn.onclick=()=>{
+if(iconBtn && iconMenu){
+
+iconBtn.onclick = () => {
 
 iconMenu.classList.toggle("hidden");
 
@@ -1091,11 +1094,11 @@ iconMenu.classList.toggle("hidden");
 
 document.querySelectorAll(".icon-option").forEach(el=>{
 
-el.onclick=()=>{
+el.onclick = () => {
 
-selectedIcon=el.dataset.icon;
+selectedIcon = el.dataset.icon;
 
-const preview=document.getElementById("previewIcon");
+if(preview){
 
 if(selectedIcon){
 
@@ -1108,11 +1111,15 @@ preview.style.display="none";
 
 }
 
+}
+
 iconMenu.classList.add("hidden");
 
 };
 
 });
+
+}
 const iconBtn = document.getElementById("iconSelector");
 const iconMenu = document.getElementById("iconMenu");
 const preview = document.getElementById("previewIcon");
