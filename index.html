@@ -194,9 +194,19 @@ onAuthStateChanged(auth,async(u)=>{
  }
 });
 
-window.login=()=>signInWithEmailAndPassword(auth,email.value,password.value);
-window.register=()=>createUserWithEmailAndPassword(auth,email.value,password.value);
-window.googleLogin=()=>signInWithPopup(auth,provider);
+window.login=()=>{
+  const emailEl=document.getElementById('email');
+  const passEl=document.getElementById('password');
+  signInWithEmailAndPassword(auth,emailEl.value,passEl.value);
+};
+window.register=()=>{
+  const emailEl=document.getElementById('email');
+  const passEl=document.getElementById('password');
+  createUserWithEmailAndPassword(auth,emailEl.value,passEl.value);
+};
+window.googleLogin=()=>{
+  signInWithPopup(auth,provider);
+};
 window.logout=()=>signOut(auth);
 
 async function cargarMemorias(){
