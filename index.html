@@ -420,37 +420,110 @@ padding:12px;
 
 }
 
-.icon-selector{
+.icon-selector-wrapper{
 
-display:flex;
-gap:10px;
-margin-top:8px;
+position:relative;
 
 }
 
-.icon-option{
+.icon-selector-btn{
 
-border:1px solid rgba(0,0,0,0.15);
-border-radius:10px;
+width:44px;
+height:44px;
 
-padding:8px;
-cursor:pointer;
+border-radius:12px;
+
+border:1px solid rgba(0,0,0,0.1);
+
+background:#f7f5f0;
 
 display:flex;
 align-items:center;
 justify-content:center;
 
-width:60px;
-height:44px;
+cursor:pointer;
+
+}
+
+body.dark .icon-selector-btn{
+
+background:#2b2b2b;
+border:1px solid rgba(255,255,255,0.15);
+
+}
+
+.icon-selector-btn img{
+
+width:26px;
+height:26px;
+
+}
+
+#iconArrow{
+
+position:absolute;
+bottom:4px;
+right:4px;
+opacity:.6;
+
+}
+
+.icon-menu{
+
+position:absolute;
+
+top:48px;
+left:0;
+
+background:var(--card);
+
+border-radius:12px;
+
+border:1px solid rgba(0,0,0,0.1);
+
+box-shadow:0 10px 20px rgba(0,0,0,0.1);
+
+display:flex;
+
+padding:6px;
+
+gap:6px;
+
+z-index:10;
+
+}
+
+.icon-option{
+
+width:40px;
+height:40px;
+
+display:flex;
+align-items:center;
+justify-content:center;
+
+border-radius:8px;
+
+cursor:pointer;
 
 }
 
 .icon-option img{
-width:28px;
+
+width:24px;
+
 }
 
-.icon-option.selected{
-border:2px solid var(--primary);
+.icon-option:hover{
+
+background:rgba(0,0,0,0.06);
+
+}
+
+body.dark .icon-option:hover{
+
+background:rgba(255,255,255,0.08);
+
 }
 
 body.dark .modal-content{
@@ -654,29 +727,18 @@ cursor:pointer;
 
 <div class="preview-card">
 
-<img id="previewIcon" class="mem-icon">
+<div class="icon-selector-wrapper">
 
-<div class="mem-text">
+<button id="iconSelector" class="icon-selector-btn">
 
-<input type="text" id="nombreTetera" placeholder="Nombre de la tetera">
+<img id="previewIcon" src="" style="display:none">
 
-<input type="number" id="modalVol" placeholder="Volumen (ml)">
-
-</div>
-
-</div>
-
-<p style="margin-top:14px;font-weight:600">
-Elige tu ícono
-</p>
-
-<div class="icon-picker">
-
-<button id="iconBtn" type="button" class="icon-select-button">
-
-<img id="previewIcon" style="display:none">
-
-<span id="iconLabel">Elegir icono</span>
+<svg id="iconArrow" width="14" height="14" viewBox="0 0 24 24">
+<polyline points="6 9 12 15 18 9"
+stroke="currentColor"
+stroke-width="2"
+fill="none"/>
+</svg>
 
 </button>
 
@@ -684,17 +746,25 @@ Elige tu ícono
 
 <div class="icon-option" data-icon="teapot.png">
 <img src="icons/teapot.png">
-Tetera
 </div>
 
 <div class="icon-option" data-icon="gaiwan.png">
 <img src="icons/gaiwan.png">
-Gaiwan
 </div>
 
 <div class="icon-option" data-icon="">
-Sin icono
+<span style="font-size:12px">✕</span>
 </div>
+
+</div>
+
+</div>
+
+<div class="preview-fields">
+
+<input id="nombreTetera" placeholder="Nombre de tetera">
+
+<input id="modalVol" type="number" placeholder="Volumen ml">
 
 </div>
 
@@ -1011,49 +1081,19 @@ el.onclick=()=>{
 selectedIcon=el.dataset.icon;
 
 const preview=document.getElementById("previewIcon");
-const label=document.getElementById("iconLabel");
 
 if(selectedIcon){
 
 preview.src="icons/"+selectedIcon;
 preview.style.display="block";
-label.style.display="none";
 
 }else{
 
 preview.style.display="none";
-label.style.display="inline";
 
 }
 
 iconMenu.classList.add("hidden");
-
-};
-
-});
-  
-document.querySelectorAll(".icon-option").forEach(el=>{
-
-el.onclick=()=>{
-
-document.querySelectorAll(".icon-option").forEach(i=>i.classList.remove("selected"));
-
-el.classList.add("selected");
-
-selectedIcon=el.dataset.icon;
-
-const preview=document.getElementById("previewIcon");
-
-if(selectedIcon){
-
-preview.src="icons/"+selectedIcon;
-preview.style.display="block";
-
-}else{
-
-preview.style.display="none";
-
-}
 
 };
 
