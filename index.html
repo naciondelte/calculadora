@@ -197,7 +197,8 @@ opacity:.65;
 margin-top:4px;
 }
 
-input,
+input{
+
 .select-arrow{
 
 appearance:none;
@@ -230,7 +231,10 @@ box-shadow:0 0 0 2px rgba(65,95,76,.15);
 
 }
 
-body.dark input,
+body.dark input{
+background:#2b2b2b;
+}
+
 body.dark .select-arrow{
 
 background:#2b2b2b url("icons/arrow-down.svg") no-repeat right 12px center;
@@ -732,7 +736,7 @@ cursor:pointer;
 <button id="iconSelector" class="icon-selector-btn">
 
 <img id="previewIcon" src="" style="display:none">
-
+<span id="iconPlaceholder">+</span>
 <svg id="iconArrow" width="14" height="14" viewBox="0 0 24 24">
 <polyline points="6 9 12 15 18 9"
 stroke="currentColor"
@@ -1065,7 +1069,7 @@ calcular();
 
 let selectedIcon="";
 
-const iconBtn=document.getElementById("iconBtn");
+const iconBtn=document.getElementById("iconSelector");
 const iconMenu=document.getElementById("iconMenu");
 
 iconBtn.onclick=()=>{
