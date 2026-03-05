@@ -198,7 +198,7 @@ margin-top:4px;
 }
 
 input,
-select{
+.select-arrow{
 
 appearance:none;
 -webkit-appearance:none;
@@ -231,7 +231,7 @@ box-shadow:0 0 0 2px rgba(65,95,76,.15);
 }
 
 body.dark input,
-body.dark select{
+body.dark .select-arrow{
 
 background:#2b2b2b url("icons/arrow-down.svg") no-repeat right 12px center;
 background-size:16px;
@@ -663,7 +663,7 @@ cursor:pointer;
 
 <h3>Tipo de Té</h3>
 
-<select id="tipoTe" onchange="calcular()">
+<select id="tipoTe" class="select-arrow" onchange="calcular()">
 
 <option value="5">Blanco (5g/110ml)</option>
 <option value="4">Verde (4g/110ml)</option>
