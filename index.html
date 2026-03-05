@@ -60,9 +60,26 @@ align-items:center;
 }
 
 .theme-btn{
-background:none;
-border:none;
+
+width:36px;
+height:36px;
+
+border-radius:10px;
+
+border:1px solid rgba(0,0,0,0.1);
+
+background:var(--card);
+
+display:flex;
+align-items:center;
+justify-content:center;
+
 cursor:pointer;
+
+}
+
+body.dark .theme-btn{
+border:1px solid rgba(255,255,255,0.15);
 }
 
 .user-menu{
@@ -74,11 +91,25 @@ opacity:.8;
 }
 
 .user-menu button{
-background:none;
-border:none;
-color:var(--primary);
+
+padding:6px 10px;
+
+border-radius:8px;
+
+border:1px solid rgba(0,0,0,0.15);
+
+background:var(--card);
+
 cursor:pointer;
-margin-left:8px;
+
+font-size:13px;
+
+margin-left:10px;
+
+}
+
+body.dark .user-menu button{
+border:1px solid rgba(255,255,255,0.2);
 }
 
 .mem-grid{
@@ -89,11 +120,15 @@ margin-bottom:20px;
 }
 
 .mem-card{
+display:flex;
+align-items:center;
+gap:12px;
+
 background:var(--card);
 padding:14px;
 border-radius:14px;
-text-align:center;
 cursor:pointer;
+
 border:1px solid rgba(0,0,0,0.08);
 box-shadow:0 3px 8px rgba(0,0,0,0.05);
 transition:.2s;
@@ -101,16 +136,10 @@ transition:.2s;
 
 body.dark .mem-card{
 border:1px solid rgba(255,255,255,0.12);
-box-shadow:0 4px 10px rgba(0,0,0,0.35);
 }
 
 .mem-card:hover{
 transform:translateY(-2px);
-box-shadow:0 10px 18px rgba(0,0,0,0.08);
-}
-
-body.dark .mem-card:hover{
-box-shadow:0 12px 22px rgba(0,0,0,0.45);
 }
 
 .mem-card.selected{
@@ -118,9 +147,24 @@ border:1px solid var(--primary);
 box-shadow:0 0 0 3px rgba(65,95,76,.25);
 }
 
-body.dark .mem-card.selected{
-border:1px solid #6f8f7d;
-box-shadow:0 0 0 3px rgba(111,143,125,.45);
+.mem-icon{
+width:34px;
+height:34px;
+flex-shrink:0;
+}
+
+.mem-text{
+display:flex;
+flex-direction:column;
+}
+
+.mem-card.no-icon{
+justify-content:center;
+text-align:center;
+}
+
+.mem-card.no-icon .mem-text{
+align-items:center;
 }
 
 .mem-card img{
@@ -152,6 +196,7 @@ font-size:14px;
 background:#f7f5f0;
 transition:.2s;
 appearance:none;
+color:var(--text);
 
 }
 
@@ -167,9 +212,10 @@ box-shadow:0 0 0 2px rgba(65,95,76,.15);
 body.dark input,
 body.dark select{
 
-background:#1b1b1b;
-border:1px solid rgba(255,255,255,0.12);
-color:white;
+background:#2b2b2b;
+border:1px solid #444;
+color:#eee;
+
 }
 
 .volume-row{
@@ -243,6 +289,51 @@ background:white;
 padding:20px;
 border-radius:12px;
 width:320px;
+}
+
+.preview-card{
+
+display:flex;
+gap:12px;
+align-items:center;
+
+border:1px solid rgba(0,0,0,0.1);
+border-radius:12px;
+padding:12px;
+
+}
+
+.icon-selector{
+
+display:flex;
+gap:10px;
+margin-top:8px;
+
+}
+
+.icon-option{
+
+border:1px solid rgba(0,0,0,0.15);
+border-radius:10px;
+
+padding:8px;
+cursor:pointer;
+
+display:flex;
+align-items:center;
+justify-content:center;
+
+width:60px;
+height:44px;
+
+}
+
+.icon-option img{
+width:28px;
+}
+
+.icon-option.selected{
+border:2px solid var(--primary);
 }
 
 body.dark .modal-content{
@@ -372,31 +463,55 @@ display:none;
 
 <div class="modal-content">
 
-<h3 id="modalTitle">Guardar Tetera</h3>
+<h3>Guardar Tetera</h3>
 
-<input type="text" id="nombreTetera" placeholder="Nombre">
+<div class="preview-card">
+
+<img id="previewIcon" class="mem-icon">
+
+<div class="mem-text">
+
+<input type="text" id="nombreTetera" placeholder="Nombre de la tetera">
 
 <input type="number" id="modalVol" placeholder="Volumen (ml)">
 
-<select id="iconSelect">
-
-<option value="">Sin icono</option>
-
-<option value="teapot.png">Tetera</option>
-
-<option value="gaiwan.png">Gaiwan</option>
-
-</select>
-
-<div style="margin-top:10px;display:flex;gap:10px">
-
-<button onclick="guardarMemoria()">Aceptar</button>
-
-<button onclick="eliminarMemoria()" style="background:#c0392b;color:white">Eliminar</button>
+</div>
 
 </div>
 
-<button onclick="cerrarModal()" style="margin-top:10px">Cancelar</button>
+<p style="margin-top:14px;font-weight:600">
+Elige tu ícono
+</p>
+
+<div class="icon-selector">
+
+<div class="icon-option" data-icon="">
+Sin icono
+</div>
+
+<div class="icon-option" data-icon="teapot.png">
+<img src="icons/teapot.png">
+</div>
+
+<div class="icon-option" data-icon="gaiwan.png">
+<img src="icons/gaiwan.png">
+</div>
+
+</div>
+
+<div style="margin-top:16px;display:flex;gap:10px">
+
+<button onclick="guardarMemoria()">Aceptar</button>
+
+<button onclick="eliminarMemoria()" style="background:#c0392b;color:white">
+Eliminar
+</button>
+
+</div>
+
+<button onclick="cerrarModal()" style="margin-top:10px">
+Cancelar
+</button>
 
 </div>
 
@@ -509,47 +624,46 @@ render();
 function render(){
 
 const cont=document.getElementById("memorias");
-
 cont.innerHTML="";
 
 memorias.forEach(m=>{
 
 const div=document.createElement("div");
-
 div.className="mem-card";
 
-const nombre=document.createElement("div");
-
-nombre.className="nombre";
+if(!m.icon){
+div.classList.add("no-icon");
+}
 
 if(m.icon){
 
 const icon=document.createElement("img");
-
 icon.src="icons/"+m.icon;
+icon.className="mem-icon";
 
-nombre.appendChild(icon);
+div.appendChild(icon);
 
 }
 
-nombre.appendChild(document.createTextNode(m.nombre));
+const text=document.createElement("div");
+text.className="mem-text";
+
+const nombre=document.createElement("div");
+nombre.className="nombre";
+nombre.textContent=m.nombre;
 
 const volumen=document.createElement("div");
-
 volumen.className="volumen";
-
 volumen.textContent=m.vol+" ml";
 
-div.appendChild(nombre);
+text.appendChild(nombre);
+text.appendChild(volumen);
 
-div.appendChild(volumen);
+div.appendChild(text);
 
 div.onclick=()=>{
-
 document.getElementById("volumen").value=m.vol;
-
 calcular();
-
 };
 
 div.ondblclick=()=>abrirModalEdicion(m);
@@ -557,7 +671,6 @@ div.ondblclick=()=>abrirModalEdicion(m);
 cont.appendChild(div);
 
 });
-
 }
 
 window.abrirModal=()=>{
@@ -596,7 +709,7 @@ const nombre=nombreTetera.value.trim();
 
 const vol=parseFloat(modalVol.value);
 
-const icon=iconSelect.value;
+const icon=iconSelect;
 
 if(!nombre||!vol)return;
 
@@ -651,6 +764,35 @@ temp.innerText="90°C";
 }
 
 calcular();
+
+let selectedIcon="";
+
+document.querySelectorAll(".icon-option").forEach(el=>{
+
+el.onclick=()=>{
+
+document.querySelectorAll(".icon-option").forEach(i=>i.classList.remove("selected"));
+
+el.classList.add("selected");
+
+selectedIcon=el.dataset.icon;
+
+const preview=document.getElementById("previewIcon");
+
+if(selectedIcon){
+
+preview.src="icons/"+selectedIcon;
+preview.style.display="block";
+
+}else{
+
+preview.style.display="none";
+
+}
+
+};
+
+});
 
 </script>
 
