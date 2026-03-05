@@ -12,7 +12,7 @@
 
 <link rel="apple-touch-icon" href="icon-192.png">
 
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
 
@@ -31,16 +31,22 @@ body.dark{
 
 body{
 margin:0;
-font-family:'Inter',system-ui;
+font-family:'Inter',system-ui,-apple-system,sans-serif;
 background:var(--bg);
 color:var(--text);
 padding:20px;
 transition:.3s;
 }
 
-h1,h2,h3{
-font-family:'Playfair Display',serif;
-margin-top:20px;
+h1{
+font-size:28px;
+font-weight:700;
+}
+
+h2,h3{
+font-family:'Inter',sans-serif;
+font-weight:600;
+letter-spacing:-0.01em;
 }
 
 .container{
@@ -68,7 +74,7 @@ border-radius:10px;
 
 border:1px solid rgba(0,0,0,0.1);
 
-background:var(--card);
+background:#e8e1d2;
 
 display:flex;
 align-items:center;
@@ -76,10 +82,15 @@ justify-content:center;
 
 cursor:pointer;
 
+transition:.2s;
+
 }
 
 body.dark .theme-btn{
+
+background:#2a2a2a;
 border:1px solid rgba(255,255,255,0.15);
+
 }
 
 .user-menu{
@@ -139,7 +150,7 @@ border:1px solid rgba(255,255,255,0.12);
 }
 
 .mem-card:hover{
-transform:translateY(-2px);
+transform:translateY(-3px) scale(1.02);
 }
 
 .mem-card.selected{
@@ -678,10 +689,14 @@ window.abrirModal=()=>{
 editId=null;
 
 nombreTetera.value="";
-
+  
 modalVol.value=volumen.value;
 
-iconSelect.value="";
+selectedIcon="";
+
+document.querySelectorAll(".icon-option").forEach(i=>i.classList.remove("selected"));
+
+document.getElementById("previewIcon").style.display="none";
 
 modal.classList.remove("hidden");
 
@@ -692,10 +707,31 @@ function abrirModalEdicion(m){
 editId=m.id;
 
 nombreTetera.value=m.nombre;
-
+  
 modalVol.value=m.vol;
 
-iconSelect.value=m.icon||"";
+selectedIcon=m.icon || "";
+
+document.querySelectorAll(".icon-option").forEach(i=>{
+
+i.classList.remove("selected");
+
+if(i.dataset.icon===selectedIcon){
+  
+i.classList.add("selected");
+  
+}
+
+});
+
+const preview=document.getElementById("previewIcon");
+
+if(selectedIcon){
+preview.src="icons/"+selectedIcon;
+preview.style.display="block";
+}else{
+preview.style.display="none";
+}
 
 modal.classList.remove("hidden");
 
