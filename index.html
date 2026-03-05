@@ -20,7 +20,8 @@ body{margin:0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;backgrou
 .top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
 
 .mem-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:20px}
-.mem-card{background:#eaeaea;padding:12px;border-radius:12px;text-align:center;user-select:none;transition:transform .25s ease,box-shadow .25s ease}
+.mem-card{background:#eaeaea;padding:12px;border-radius:12px;text-align:center;user-select:none;transition:transform .25s ease,box-shadow .25s ease,border .2s ease;cursor:default;border:2px solid transparent}
+.mem-card.selected{border:2px solid var(--primary);box-shadow:0 0 0 3px rgba(102,126,234,.25);transform:scale(1.03)}
 .mem-card.dragging{opacity:.85;cursor:grabbing;box-shadow:0 15px 25px rgba(0,0,0,.25);transform:scale(1.05);z-index:1000}
 .mem-card .nombre{font-weight:600;margin-bottom:6px}
 .mem-card .volumen{font-size:13px;opacity:.8;border-top:1px solid rgba(0,0,0,.15);padding-top:6px}
@@ -60,13 +61,13 @@ body.dark .modal-content{background:#1e1e1e;color:white}
 <input type="email" id="email" placeholder="Email">
 <input type="password" id="password" placeholder="Password">
 <button onclick="login()">Login</button>
-<button onclick="register()">Registrar</button>
+<button onclick="register()">Regístrate</button>
 <button onclick="googleLogin()" style="background:#db4437">Google</button>
 </div>
 
 <div id="app" class="hidden">
 <div style="margin-bottom:15px">
-Conectado como <strong id="userEmail"></strong>
+Bienvenido <strong id="userEmail"></strong>
 <button class="small-btn" onclick="logout()">Salir</button>
 </div>
 
@@ -80,14 +81,26 @@ Conectado como <strong id="userEmail"></strong>
 </div>
 
 <h3>Tipo de Té</h3>
-<select id="tipoTe" onchange="calcular()">
-<option value="5">Blanco (5 g/110ml)</option>
-<option value="4">Verde (4 g/110ml)</option>
-<option value="6">Amarillo (6 g/110ml)</option>
-<option value="7" selected>Oolong (7 g/110ml)</option>
-<option value="8">Pu erh Sheng (8 g/110ml)</option>
-<option value="10">Pu erh Shou (10 g/110ml)</option>
-<option value="6">Negro (6 g/110ml)</option>
+<select id="tipoTe" onchange="// restaurar preferencias guardadas
+const savedTea = localStorage.getItem('lastTea');
+if(savedTea){
+  const sel = document.getElementById('tipoTe');
+  sel.value = savedTea;
+}
+
+const savedVol = localStorage.getItem('lastVol');
+if(savedVol){
+  document.getElementById('volumen').value = savedVol;
+}
+
+calcular();localStorage.setItem('lastTea',this.value)">
+<option value="5" selected>Blanco (5g/110ml)</option>
+<option value="4">Verde (4g/110ml)</option>
+<option value="6">Amarillo (6g/110ml)</option>
+<option value="7">Oolong (7g/110ml)</option>
+<option value="8">Pu erh Sheng (8g/110ml)</option>
+<option value="10">Pu erh Shou (10g/110ml)</option>
+<option value="6">Negro (6g/110ml)</option>
 </select>
 
 <div style="margin:10px 0">
@@ -108,8 +121,8 @@ Conectado como <strong id="userEmail"></strong>
 </div>
 
 <div class="footer">
-<p><a href="https://www.instagram.com/naciondelte/" target="_blank">Aprende más sobre el té y el método Gong Fu Cha en nuestro Instagram @naciondelte<span>Haz clic aquí para visitarnos</span></a></p>
-<p><a href="https://discord.gg/mjzhCXBRW" target="_blank">Únete a nuestra comunidad del té en español y comparte con más gente amante del té en nuestro Discord<span>Haz clic aquí para unirte</span></a></p>
+<p>Aprende más sobre el té y el método Gong Fu Cha en nuestro Instagram @naciondelte<span><a href="https://www.instagram.com/naciondelte/" target="_blank">Haz clic aquí para visitarnos</a></span></p>
+<p>Únete a nuestra comunidad del té en español y comparte con más gente amante del té en nuestro Discord<span><a href="https://discord.gg/mjzhCXBRW" target="_blank">Haz clic aquí para unirte</a></span></p>
 </div>
 </div>
 
@@ -127,7 +140,15 @@ Conectado como <strong id="userEmail"></strong>
 </div>
 
 <script>
-function toggleDark(){document.body.classList.toggle('dark')}
+function toggleDark(){
+  document.body.classList.toggle('dark');
+  localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+}
+
+// Restaurar modo oscuro al cargar
+if(localStorage.getItem('darkMode') === 'true'){
+  document.body.classList.add('dark');
+}
 </script>
 
 <script type="module">
@@ -194,7 +215,18 @@ function render(){
   div.appendChild(nombre);
   div.appendChild(volumen);
 
-  div.onclick=()=>{volumenInput.value=m.vol;calcular()};
+  div.onclick=()=>{
+    document.getElementById("volumen").value = m.vol;
+    calcular();
+
+    // guardar ultima tetera usada
+    localStorage.setItem('lastVol', m.vol);
+    localStorage.setItem('lastMemId', m.id);
+
+    // resaltar seleccion
+    document.querySelectorAll('.mem-card').forEach(c=>c.classList.remove('selected'));
+    div.classList.add('selected');
+  };
   div.ondblclick=()=>abrirModalEdicion(m);
 
   div.ondragstart=()=>{dragId=m.id;div.classList.add("dragging")};
@@ -276,13 +308,13 @@ window.calcular=()=>{
  gramos.innerText=gCalc.toFixed(2);
  agua.innerText=aCalc.toFixed(2);
  const temps={
-  "Blanco (5 g/110ml)":"85-95°C",
-  "Verde (4 g/110ml)":"80-85°C",
-  "Amarillo (6 g/110ml)":"80-90°C",
-  "Oolong (7 g/110ml)":"100°C",
-  "Pu erh Sheng (8 g/110ml)":"95°C",
-  "Pu erh Shou (10 g/110ml)":"100°C",
-  "Negro (6 g/110ml)":"95°C"
+  "Blanco (5g/110ml)":"85-95°C",
+  "Verde (4g/110ml)":"80-85°C",
+  "Amarillo (6g/110ml)":"80-90°C",
+  "Oolong (7g/110ml)":"100°C",
+  "Pu erh Sheng (8g/110ml)":"95°C",
+  "Pu erh Shou (10g/110ml)":"100°C",
+  "Negro (6g/110ml)":"95°C"
  };
  temp.innerText=temps[tipoTe.options[tipoTe.selectedIndex].text];
 }
