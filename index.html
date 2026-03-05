@@ -322,6 +322,14 @@ window.calcular=()=>{
 
 calcular();
 </script>
-
+  
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./service-worker.js')
+  .then(reg => console.log("Service Worker registrado"))
+  .catch(err => console.log("Error SW:", err));
+}
+</script>
+  
 </body>
 </html>
