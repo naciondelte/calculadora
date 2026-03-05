@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Calculadora Gong Fu Cha</title>
 
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#667eea">
 
 <style>
 
@@ -29,7 +30,7 @@ font-family:system-ui;
 background:var(--bg);
 color:var(--text);
 padding:20px;
-transition:.3s;
+transition:.25s;
 }
 
 .container{
@@ -62,7 +63,7 @@ border-radius:12px;
 text-align:center;
 user-select:none;
 border:2px solid transparent;
-transition:transform .25s, box-shadow .25s;
+transition:transform .18s ease;
 }
 
 body.dark .mem-card{
@@ -70,20 +71,20 @@ background:#2a2a2a;
 }
 
 .mem-card.dragging{
-opacity:.8;
-box-shadow:0 10px 20px rgba(0,0,0,.3);
+transform:scale(1.05);
+box-shadow:0 12px 25px rgba(0,0,0,.3);
 }
 
 .mem-card.selected{
 border:2px solid var(--primary);
 }
 
-.mem-card .nombre{
+.nombre{
 font-weight:600;
 margin-bottom:6px;
 }
 
-.mem-card .volumen{
+.volumen{
 font-size:13px;
 border-top:1px solid rgba(0,0,0,.2);
 padding-top:6px;
@@ -102,11 +103,6 @@ color:white;
 border:none;
 cursor:pointer;
 font-weight:bold;
-}
-
-.small-btn{
-padding:6px 10px;
-font-size:13px;
 }
 
 .volume-row{
@@ -131,43 +127,8 @@ margin-top:20px;
 display:none;
 }
 
-.footer{
-margin-top:50px;
-text-align:center;
-}
-
-.footer a{
-color:var(--primary);
-font-weight:bold;
-text-decoration:underline;
-}
-
-.modal{
-position:fixed;
-inset:0;
-background:rgba(0,0,0,.4);
-display:flex;
-justify-content:center;
-align-items:center;
-}
-
-.modal.hidden{
-display:none;
-}
-
-.modal-content{
-background:white;
-padding:20px;
-border-radius:12px;
-width:320px;
-}
-
-body.dark .modal-content{
-background:#1e1e1e;
-color:white;
-}
-
 </style>
+
 </head>
 
 <body>
@@ -176,7 +137,7 @@ color:white;
 
 <div class="top-bar">
 <h2>🍵 Calculadora Gong Fu Cha</h2>
-<button onclick="toggleDark()" class="small-btn">🌙</button>
+<button onclick="toggleDark()">🌙</button>
 </div>
 
 <div id="authSection">
@@ -199,12 +160,12 @@ color:white;
 
 <div class="volume-row">
 <input id="volumen" type="number" value="100" oninput="calcular()">
-<button onclick="abrirModal()">Guardar Tetera</button>
 </div>
 
 <h3>Tipo de Té</h3>
 
 <select id="tipoTe" onchange="calcular()">
+
 <option value="5">Blanco (5 g / 110 ml)</option>
 <option value="4">Verde (4 g / 110 ml)</option>
 <option value="6">Amarillo (6 g / 110 ml)</option>
@@ -212,6 +173,7 @@ color:white;
 <option value="8">Pu erh Sheng (8 g / 110 ml)</option>
 <option value="10">Pu erh Shou (10 g / 110 ml)</option>
 <option value="6">Negro (6 g / 110 ml)</option>
+
 </select>
 
 <div class="result-box">
@@ -243,7 +205,6 @@ document.body.classList.add("dark")
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js"
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"
 
 const firebaseConfig={
 apiKey:"AIzaSyAnCT6glmf4n1zxzHJoHx4Z9l7yR0jju1I",
@@ -251,114 +212,29 @@ authDomain:"calc-gong-fu.firebaseapp.com",
 projectId:"calc-gong-fu"
 }
 
-const app=initializeApp(firebaseConfig)
-const auth=getAuth(app)
-const db=getFirestore(app)
+const firebaseApp=initializeApp(firebaseConfig)
+const auth=getAuth(firebaseApp)
 const provider=new GoogleAuthProvider()
 
-let user=null
-let memorias=[]
-let dragIndex=null
+onAuthStateChanged(auth,(user)=>{
 
-onAuthStateChanged(auth,async(u)=>{
-if(u){
+if(user){
 
-user=u
-authSection.style.display="none"
-appDiv.style.display="block"
-cargarMemorias()
+document.getElementById("authSection").style.display="none"
+document.getElementById("app").style.display="block"
 
 }else{
 
-authSection.style.display="block"
-appDiv.style.display="none"
+document.getElementById("authSection").style.display="block"
+document.getElementById("app").style.display="none"
 
 }
+
 })
 
 window.login=()=>signInWithEmailAndPassword(auth,email.value,password.value)
 window.register=()=>createUserWithEmailAndPassword(auth,email.value,password.value)
 window.googleLogin=()=>signInWithPopup(auth,provider)
-
-async function cargarMemorias(){
-
-memorias=[]
-const q=query(collection(db,"usuarios",user.uid,"teteras"),orderBy("orden"))
-const snap=await getDocs(q)
-
-snap.forEach(d=>memorias.push({...d.data(),id:d.id}))
-
-render()
-
-}
-
-function render(){
-
-const cont=document.getElementById("memorias")
-cont.innerHTML=""
-
-memorias.forEach((m,i)=>{
-
-const card=document.createElement("div")
-card.className="mem-card"
-card.draggable=true
-
-card.innerHTML=`
-<div class="nombre">${m.nombre}</div>
-<div class="volumen">${m.vol} ml</div>
-`
-
-card.onclick=()=>{
-volumen.value=m.vol
-calcular()
-}
-
-card.ondragstart=()=>{
-dragIndex=i
-card.classList.add("dragging")
-}
-
-card.ondragend=()=>{
-card.classList.remove("dragging")
-guardarOrden()
-}
-
-card.ondragover=(e)=>{
-e.preventDefault()
-
-const over=i
-
-if(over!==dragIndex){
-
-const moved=memorias.splice(dragIndex,1)[0]
-memorias.splice(over,0,moved)
-
-dragIndex=over
-
-render()
-
-}
-
-}
-
-cont.appendChild(card)
-
-})
-
-}
-
-async function guardarOrden(){
-
-for(let i=0;i<memorias.length;i++){
-
-await updateDoc(
-doc(db,"usuarios",user.uid,"teteras",memorias[i].id),
-{orden:i}
-)
-
-}
-
-}
 
 window.calcular=()=>{
 
@@ -373,19 +249,24 @@ const a=vol-(g*desp)
 gramos.innerText=g.toFixed(2)
 agua.innerText=a.toFixed(2)
 
-const tempMap={
-"Blanco":"85-95°C",
-"Verde":"80-85°C",
-"Amarillo":"80-90°C",
-"Oolong":"100°C",
-"Pu erh Sheng":"95°C",
-"Pu erh Shou":"100°C",
-"Negro":"95°C"
+const temps={
+Blanco:"85-95°C",
+Verde:"80-85°C",
+Amarillo:"80-90°C",
+Oolong:"100°C",
+Pu:"95°C",
+Negro:"95°C"
 }
 
-const nombre=tipoTe.options[tipoTe.selectedIndex].text.split(" ")[0]
+const name=tipoTe.options[tipoTe.selectedIndex].text
 
-temp.innerText=tempMap[nombre]
+if(name.includes("Blanco"))temp.innerText="85-95°C"
+if(name.includes("Verde"))temp.innerText="80-85°C"
+if(name.includes("Amarillo"))temp.innerText="80-90°C"
+if(name.includes("Oolong"))temp.innerText="100°C"
+if(name.includes("Sheng"))temp.innerText="95°C"
+if(name.includes("Shou"))temp.innerText="100°C"
+if(name.includes("Negro"))temp.innerText="95°C"
 
 }
 
