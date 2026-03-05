@@ -22,6 +22,7 @@ body{margin:0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;backgrou
 .mem-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:20px}
 .mem-card{background:#eaeaea;padding:12px;border-radius:12px;text-align:center;user-select:none;transition:transform .25s ease,box-shadow .25s ease,border .2s ease;cursor:default;border:2px solid transparent}
 .mem-card.moving{transform:scale(0.97)}
+.mem-card.shift{transform:translateX(10px)}
 .mem-card.selected{border:2px solid var(--primary);box-shadow:0 0 0 3px rgba(102,126,234,.25);transform:scale(1.03)}
 .mem-card.dragging{opacity:.85;cursor:grabbing;box-shadow:0 15px 25px rgba(0,0,0,.25);transform:scale(1.05);z-index:1000}
 .mem-card .nombre{font-weight:600;margin-bottom:6px}
@@ -165,6 +166,11 @@ from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig={apiKey:"AIzaSyAnCT6glmf4n1zxzHJoHx4Z9l7yR0jju1I",authDomain:"calc-gong-fu.firebaseapp.com",projectId:"calc-gong-fu"};
 
+const authSection=document.getElementById("authSection");
+const app=document.getElementById("app");
+const userEmail=document.getElementById("userEmail");
+const volumenInput=document.getElementById("volumen");
+
 const appFirebase=initializeApp(firebaseConfig);
 const auth=getAuth(appFirebase);
 const db=getFirestore(appFirebase);
@@ -226,7 +232,7 @@ function render(){
   }
 
   div.onclick=()=>{
-    document.getElementById("volumen").value = m.vol;
+    volumenInput.value = m.vol;
     calcular();
 
     localStorage.setItem('lastVol', m.vol);
@@ -249,6 +255,7 @@ function render(){
   div.ondragover=e=>{
     e.preventDefault();
     const overId=m.id;
+
     if(dragId!==overId){
       const from=memorias.findIndex(x=>x.id===dragId);
       const to=memorias.findIndex(x=>x.id===overId);
@@ -256,11 +263,12 @@ function render(){
       const moved=memorias.splice(from,1)[0];
       memorias.splice(to,0,moved);
 
-      // animación tipo colisión
-      div.classList.add('moving');
-      setTimeout(()=>div.classList.remove('moving'),150);
+      // animación suave tipo "correrse"
+      div.classList.add('shift');
+      setTimeout(()=>div.classList.remove('shift'),180);
 
       render();
+    }
     }
   };
 
