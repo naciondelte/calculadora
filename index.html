@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -24,7 +25,7 @@
 
 body.dark{
 --bg:#121212;
---card:#1f1f1f;
+--card:#1c1c1c;
 --text:#f5f5f5;
 }
 
@@ -39,6 +40,7 @@ transition:.3s;
 
 h1,h2,h3{
 font-family:'Playfair Display',serif;
+margin-top:20px;
 }
 
 .container{
@@ -55,7 +57,6 @@ position:relative;
 display:flex;
 justify-content:space-between;
 align-items:center;
-margin-bottom:20px;
 }
 
 .theme-btn{
@@ -93,14 +94,14 @@ padding:14px;
 border-radius:14px;
 text-align:center;
 cursor:pointer;
-border:1px solid rgba(0,0,0,0.06);
+border:1px solid rgba(0,0,0,0.08);
 box-shadow:0 3px 8px rgba(0,0,0,0.05);
 transition:.2s;
 }
 
 .mem-card:hover{
 transform:translateY(-2px);
-box-shadow:0 8px 16px rgba(0,0,0,0.08);
+box-shadow:0 10px 18px rgba(0,0,0,0.08);
 }
 
 .mem-card.selected{
@@ -110,8 +111,8 @@ box-shadow:0 0 0 3px rgba(65,95,76,.2);
 
 .mem-card img{
 width:20px;
-vertical-align:middle;
 margin-right:6px;
+vertical-align:middle;
 }
 
 .mem-card .nombre{
@@ -126,12 +127,19 @@ margin-top:4px;
 }
 
 input,select{
+
 padding:12px;
 border-radius:12px;
 border:1px solid rgba(0,0,0,0.1);
 font-size:14px;
 background:white;
-width:100%;
+transition:.2s;
+}
+
+input:focus,select:focus{
+outline:none;
+border:1px solid var(--primary);
+box-shadow:0 0 0 2px rgba(65,95,76,.15);
 }
 
 body.dark input,
@@ -177,7 +185,7 @@ text-align:center;
 }
 
 .result-card strong{
-font-size:26px;
+font-size:28px;
 display:block;
 }
 
@@ -219,7 +227,12 @@ background:#1e1e1e;
 color:white;
 }
 
+.hidden{
+display:none;
+}
+
 </style>
+
 </head>
 
 <body>
@@ -227,40 +240,57 @@ color:white;
 <div class="container">
 
 <div class="top-bar">
+
 <h2>🍵 Calculadora Gong Fu Cha</h2>
 
 <button class="theme-btn" onclick="toggleDark()">
 <img id="themeIcon" src="icons/moon.svg" width="20">
 </button>
+
 </div>
 
 <div id="authSection">
+
 <input type="email" id="email" placeholder="Email">
+
 <input type="password" id="password" placeholder="Password">
+
 <button onclick="login()">Login</button>
+
 <button onclick="register()">Regístrate</button>
+
 <button onclick="googleLogin()" style="background:#db4437;color:white">Google</button>
+
 </div>
 
 <div id="app" class="hidden">
 
 <div class="user-menu">
+
 <span id="userEmail"></span>
+
 <button onclick="logout()">Salir</button>
+
 </div>
 
 <h3>Mis Teteras</h3>
+
 <div id="memorias" class="mem-grid"></div>
 
 <h3>Volumen</h3>
+
 <div class="volume-row">
+
 <input type="number" id="volumen" value="100" oninput="calcular()">
+
 <button class="add-btn" onclick="abrirModal()">+</button>
+
 </div>
 
 <h3>Tipo de Té</h3>
 
 <select id="tipoTe" onchange="calcular()">
+
 <option value="5">Blanco (5g/110ml)</option>
 <option value="4">Verde (4g/110ml)</option>
 <option value="6">Amarillo (6g/110ml)</option>
@@ -268,23 +298,33 @@ color:white;
 <option value="8">Pu erh Sheng (8g/110ml)</option>
 <option value="10">Pu erh Shou (10g/110ml)</option>
 <option value="6">Negro (6g/110ml)</option>
+
 </select>
 
 <div class="result-box">
 
 <div class="result-card">
+
 <strong id="gramos">0</strong>
-g de té
+
+<span>Hojas de té</span>
+
 </div>
 
 <div class="result-card">
+
 <strong id="agua">0</strong>
-ml agua útil
+
+<span>Agua útil (ml)</span>
+
 </div>
 
 <div class="result-card">
+
 <strong id="temp">-</strong>
-temperatura
+
+<span>Temperatura</span>
+
 </div>
 
 </div>
@@ -305,7 +345,6 @@ temperatura
 
 </div>
 
-
 <div id="modal" class="modal hidden">
 
 <div class="modal-content">
@@ -314,14 +353,18 @@ temperatura
 
 <input type="text" id="nombreTetera" placeholder="Nombre">
 
-<input type="number" id="modalVol" placeholder="Volumen">
+<input type="number" id="modalVol" placeholder="Volumen (ml)">
 
 <label>Icono</label>
 
 <select id="iconSelect">
+
 <option value="">Sin icono</option>
+
 <option value="teapot.png">Tetera</option>
+
 <option value="gaiwan.png">Gaiwan</option>
+
 </select>
 
 <div style="margin-top:10px;display:flex;gap:10px">
@@ -338,7 +381,6 @@ temperatura
 
 </div>
 
-
 <script>
 
 function toggleDark(){
@@ -347,7 +389,7 @@ document.body.classList.toggle('dark');
 
 const dark=document.body.classList.contains('dark');
 
-document.getElementById("themeIcon").src =
+document.getElementById("themeIcon").src=
 dark ? "icons/sun.svg" : "icons/moon.svg";
 
 localStorage.setItem('darkMode',dark);
@@ -365,56 +407,58 @@ document.getElementById("themeIcon").src="icons/sun.svg";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 
-import {
-getAuth,
-signInWithEmailAndPassword,
-createUserWithEmailAndPassword,
-signOut,
-onAuthStateChanged,
-GoogleAuthProvider,
-signInWithPopup
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup }
 
-import {
-getFirestore,
-collection,
-addDoc,
-getDocs,
-deleteDoc,
-updateDoc,
-doc,
-query,
-orderBy
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc, query, orderBy }
+
+from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig={
+
 apiKey:"AIzaSyAnCT6glmf4n1zxzHJoHx4Z9l7yR0jju1I",
 authDomain:"calc-gong-fu.firebaseapp.com",
 projectId:"calc-gong-fu"
+
 };
 
 const appFirebase=initializeApp(firebaseConfig);
+
 const auth=getAuth(appFirebase);
+
 const db=getFirestore(appFirebase);
+
 const provider=new GoogleAuthProvider();
 
 let user=null;
+
 let memorias=[];
+
 let editId=null;
 
 onAuthStateChanged(auth,async(u)=>{
 
 if(u){
+
 user=u;
+
 authSection.classList.add("hidden");
+
 app.classList.remove("hidden");
+
 userEmail.innerText=u.email;
+
 cargarMemorias();
+
 }
 
 else{
+
 authSection.classList.remove("hidden");
+
 app.classList.add("hidden");
+
 }
 
 });
@@ -453,9 +497,9 @@ const div=document.createElement("div");
 
 div.className="mem-card";
 
-const nombre=document.createElement('div');
+const nombre=document.createElement("div");
 
-nombre.className='nombre';
+nombre.className="nombre";
 
 if(m.icon){
 
@@ -469,11 +513,11 @@ nombre.appendChild(icon);
 
 nombre.appendChild(document.createTextNode(m.nombre));
 
-const volumen=document.createElement('div');
+const volumen=document.createElement("div");
 
-volumen.className='volumen';
+volumen.className="volumen";
 
-volumen.textContent=m.vol+' ml';
+volumen.textContent=m.vol+" ml";
 
 div.appendChild(nombre);
 
@@ -580,15 +624,6 @@ const aCalc=vol-(gCalc*desp);
 gramos.innerText=gCalc.toFixed(2);
 
 agua.innerText=aCalc.toFixed(1);
-
-const temps={
-
-"Blanco":"85-95°C",
-"Verde":"80-85°C",
-"Oolong":"100°C",
-"Negro":"95°C"
-
-};
 
 temp.innerText="90°C";
 
