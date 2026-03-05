@@ -21,6 +21,7 @@ body{margin:0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;backgrou
 
 .mem-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:20px}
 .mem-card{background:#eaeaea;padding:12px;border-radius:12px;text-align:center;user-select:none;transition:transform .25s ease,box-shadow .25s ease,border .2s ease;cursor:default;border:2px solid transparent}
+.mem-card.moving{transform:scale(0.97)}
 .mem-card.selected{border:2px solid var(--primary);box-shadow:0 0 0 3px rgba(102,126,234,.25);transform:scale(1.03)}
 .mem-card.dragging{opacity:.85;cursor:grabbing;box-shadow:0 15px 25px rgba(0,0,0,.25);transform:scale(1.05);z-index:1000}
 .mem-card .nombre{font-weight:600;margin-bottom:6px}
@@ -82,18 +83,22 @@ Bienvenido <strong id="userEmail"></strong>
 
 <h3>Tipo de Té</h3>
 <select id="tipoTe" onchange="// restaurar preferencias guardadas
-const savedTea = localStorage.getItem('lastTea');
-if(savedTea){
-  const sel = document.getElementById('tipoTe');
-  sel.value = savedTea;
-}
+// restaurar preferencias guardadas cuando carga la página
+window.addEventListener('DOMContentLoaded',()=>{
+ const savedTea = localStorage.getItem('lastTea');
+ if(savedTea){
+  const sel=document.getElementById('tipoTe');
+  if(sel) sel.value=savedTea;
+ }
 
-const savedVol = localStorage.getItem('lastVol');
-if(savedVol){
-  document.getElementById('volumen').value = savedVol;
-}
+ const savedVol = localStorage.getItem('lastVol');
+ if(savedVol){
+  const v=document.getElementById('volumen');
+  if(v) v.value=savedVol;
+ }
 
-calcular();localStorage.setItem('lastTea',this.value)">
+ calcular();
+});localStorage.setItem('lastTea',this.value)">
 <option value="5" selected>Blanco (5g/110ml)</option>
 <option value="4">Verde (4g/110ml)</option>
 <option value="6">Amarillo (6g/110ml)</option>
@@ -199,6 +204,7 @@ async function cargarMemorias(){
 function render(){
  const cont=document.getElementById("memorias");
  cont.innerHTML="";
+ const lastId = localStorage.getItem('lastMemId');
  memorias.forEach(m=>{
   const div=document.createElement("div");
   div.className="mem-card";
@@ -215,35 +221,52 @@ function render(){
   div.appendChild(nombre);
   div.appendChild(volumen);
 
+  if(lastId && lastId===m.id){
+    div.classList.add('selected');
+  }
+
   div.onclick=()=>{
     document.getElementById("volumen").value = m.vol;
     calcular();
 
-    // guardar ultima tetera usada
     localStorage.setItem('lastVol', m.vol);
     localStorage.setItem('lastMemId', m.id);
 
-    // resaltar seleccion
     document.querySelectorAll('.mem-card').forEach(c=>c.classList.remove('selected'));
     div.classList.add('selected');
   };
+
   div.ondblclick=()=>abrirModalEdicion(m);
 
   div.ondragstart=()=>{dragId=m.id;div.classList.add("dragging")};
-  div.ondragend=async()=>{div.classList.remove("dragging");guardarOrden()};
+
+  div.ondragend=async()=>{
+    div.classList.remove("dragging");
+    document.querySelectorAll('.mem-card').forEach(c=>c.classList.remove('moving'));
+    guardarOrden();
+  };
+
   div.ondragover=e=>{
     e.preventDefault();
     const overId=m.id;
     if(dragId!==overId){
       const from=memorias.findIndex(x=>x.id===dragId);
       const to=memorias.findIndex(x=>x.id===overId);
+
       const moved=memorias.splice(from,1)[0];
       memorias.splice(to,0,moved);
+
+      // animación tipo colisión
+      div.classList.add('moving');
+      setTimeout(()=>div.classList.remove('moving'),150);
+
       render();
     }
   };
 
   cont.appendChild(div);
+ });
+}
  });
 }
 
