@@ -5,110 +5,815 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Calculadora de Té</title>
+<title>Calculadora Gong Fu Cha</title>
 
-<link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#415f4c">
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="apple-touch-icon" href="icon-192.png">
 
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+:root{
+--bg:#f3eadb;
+--card:#ffffff;
+--text:#222;
+--primary:#415f4c;
+}
+
+body.dark{
+--bg:#121212;
+--card:#1c1c1c;
+--text:#f5f5f5;
+}
+
+body{
+margin:0;
+font-family:'Inter',system-ui,-apple-system,sans-serif;
+background:var(--bg);
+color:var(--text);
+padding:20px;
+transition:.3s;
+}
+
+h1{
+font-size:28px;
+font-weight:700;
+}
+
+h2,h3{
+font-family:'Inter',sans-serif;
+font-weight:600;
+letter-spacing:-0.01em;
+}
+
+.container{
+max-width:900px;
+margin:auto;
+background:var(--card);
+padding:30px;
+border-radius:20px;
+box-shadow:0 20px 40px rgba(0,0,0,0.15);
+position:relative;
+}
+
+.top-bar{
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+.theme-btn{
+
+width:36px;
+height:36px;
+position:absolute;
+top:20px;
+right:20px;
+border-radius:10px;
+
+border:1px solid rgba(0,0,0,0.1);
+
+background:#e8e1d2;
+
+display:flex;
+align-items:center;
+justify-content:center;
+
+cursor:pointer;
+
+transition:.2s;
+
+}
+
+body.dark .theme-btn{
+
+background:#2a2a2a;
+border:1px solid rgba(255,255,255,0.15);
+
+}
+
+.user-menu{
+position:absolute;
+top:20px;
+right:70px;
+display:flex;
+gap:10px;
+font-size:13px;
+opacity:.8;
+}
+
+.user-menu button{
+
+padding:6px 10px;
+
+border-radius:8px;
+
+border:1px solid rgba(0,0,0,0.15);
+
+background:var(--card);
+
+cursor:pointer;
+
+font-size:13px;
+
+margin-left:10px;
+
+}
+
+body.dark .user-menu button{
+border:1px solid rgba(255,255,255,0.2);
+color:white;
+}
+
+.mem-grid{
+display:grid;
+grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+gap:12px;
+margin-bottom:20px;
+}
+
+.mem-card{
+display:flex;
+align-items:center;
+gap:12px;
+
+background:var(--card);
+padding:14px;
+border-radius:14px;
+cursor:pointer;
+
+border:1px solid rgba(0,0,0,0.08);
+box-shadow:0 3px 8px rgba(0,0,0,0.05);
+transition:.2s;
+}
+
+body.dark .mem-card{
+border:1px solid rgba(255,255,255,0.12);
+}
+
+.mem-card:hover{
+transform:translateY(-3px) scale(1.02);
+}
+
+.mem-card.selected{
+border:1px solid var(--primary);
+box-shadow:0 0 0 3px rgba(65,95,76,.25);
+}
+
+.mem-icon{
+height:34px;
+flex-shrink:0;
+align-items:center;
+justify-content:center;
+}
+
+.mem-text{
+display:flex;
+flex-direction:column;
+}
+
+.mem-card.no-icon{
+justify-content:center;
+text-align:center;
+}
+
+.mem-card.no-icon .mem-text{
+align-items:center;
+}
+
+.mem-card img{
+height:32px;
+margin-bottom:auto;
+display:block;
+margin-left:6px;
+margin-right:auto;
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+.mem-card .nombre{
+font-weight:600;
+font-size:15px;
+flex:1;
+text-align:center;
+}
+
+.mem-card .volumen{
+font-size:12px;
+opacity:.65;
+margin-top:4px;
+flex:1;
+text-align:center;
+}
+
+input{
+
+padding:12px;
+border-radius:12px;
+
+border:1px solid rgba(0,0,0,0.08);
+
+background:#f7f5f0;
+
+font-family:'Inter',sans-serif;
+
+}
+
+.select-arrow{
+
+appearance:none;
+-webkit-appearance:none;
+-moz-appearance:none;
+
+padding:12px;
+border-radius:12px;
+
+border:1px solid rgba(0,0,0,0.08);
+
+background:#f7f5f0 url("icons/arrow-down.svg") no-repeat right 12px center;
+
+background-size:16px;
+
+padding-right:36px;
+
+font-family:'Inter',sans-serif;
+
+cursor:pointer;
+
+color:inherit;
+
+}
+
+input:focus,
+select:focus{
+
+outline:none;
+border:1px solid var(--primary);
+box-shadow:0 0 0 2px rgba(65,95,76,.15);
+color:inherit;
+}
+
+body.dark input{
+background:#2b2b2b;
+color:white;
+}
+body.dark .select-arrow{
+
+background:#2b2b2b url("icons/arrow-down.svg") no-repeat right 12px center;
+background-size:16px;
+color:white;
+
+}
+
+.volume-row{
+display:flex;
+gap:10px;
+margin-bottom:20px;
+}
+
+.add-btn{
+width:44px;
+height:44px;
+border-radius:50%;
+background:var(--primary);
+color:white;
+font-size:26px;
+border:none;
+cursor:pointer;
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+.result-box{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:16px;
+margin-top:25px;
+}
+
+.result-card{
+background:var(--primary);
+color:white;
+padding:20px;
+border-radius:14px;
+text-align:center;
+}
+
+.result-card strong{
+font-size:28px;
+display:block;
+}
+
+.footer{
+margin-top:50px;
+text-align:center;
+font-size:15px;
+}
+
+.footer span{
+display:block;
+font-size:13px;
+margin-top:5px;
+opacity:.8;
+}
+
+.modal{
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.4);
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+.modal.hidden{
+display:none;
+}
+
+.modal-content{
+background:white;
+padding:20px;
+border-radius:12px;
+width:320px;
+}
+
+.icon-picker{
+
+position:relative;
+
+}
+
+.icon-select-button{
+
+display:flex;
+align-items:center;
+gap:8px;
+
+border-radius:12px;
+
+border:1px solid rgba(0,0,0,0.1);
+
+padding:10px 12px;
+
+background:#f7f5f0;
+
+cursor:pointer;
+
+font-family:'Inter',sans-serif;
+
+}
+
+body.dark .icon-select-button{
+
+background:#2b2b2b;
+border:1px solid rgba(255,255,255,0.15);
+
+}
+
+.icon-select-button img{
+
+width:26px;
+
+}
+
+.icon-menu{
+
+position:absolute;
+
+top:44px;
+left:0;
+
+background:var(--card);
+
+border:1px solid rgba(0,0,0,0.1);
+
+border-radius:12px;
+
+box-shadow:0 10px 18px rgba(0,0,0,0.1);
+
+padding:6px;
+
+display:flex;
+flex-direction:column;
+
+gap:4px;
+
+z-index:10;
+
+}
+
+.icon-option{
+
+display:flex;
+align-items:center;
+gap:8px;
+
+padding:8px;
+
+border-radius:8px;
+
+cursor:pointer;
+
+}
+
+.icon-option img{
+
+width:24px;
+
+}
+
+.icon-option:hover{
+
+background:rgba(0,0,0,0.05);
+
+}
+
+body.dark .icon-option:hover{
+
+background:rgba(255,255,255,0.08);
+
+}
+  
+.preview-card{
+
+display:flex;
+gap:12px;
+align-items:center;
+
+border:1px solid rgba(0,0,0,0.1);
+border-radius:12px;
+padding:12px;
+
+}
+
+.icon-selector-wrapper{
+
+position:relative;
+
+}
+
+.icon-selector-btn{
+
+width:79px;
+height:79px;
+
+border-radius:14px;
+
+border:1px solid rgba(0,0,0,0.1);
+
+background:#f7f5f0;
+
+display:flex;
+align-items:center;
+justify-content:center;
+
+cursor:pointer;
+
+}
+
+body.dark .icon-selector-btn{
+
+background:#2b2b2b;
+border:1px solid rgba(255,255,255,0.15);
+
+}
+
+.icon-selector-btn img{
+
+width:56px;
+height:56px;
+
+}
+
+#iconArrow{
+
+position:absolute;
+bottom:4px;
+right:4px;
+opacity:.6;
+
+}
+
+.icon-menu{
+
+position:absolute;
+
+top:48px;
+left:0;
+
+background:var(--card);
+
+border-radius:12px;
+
+border:1px solid rgba(0,0,0,0.1);
+
+box-shadow:0 10px 20px rgba(0,0,0,0.1);
+
+display:flex;
+
+padding:6px;
+
+gap:6px;
+
+z-index:10;
+
+}
+
+.icon-option{
+
+width:40px;
+height:40px;
+
+display:flex;
+align-items:center;
+justify-content:center;
+
+border-radius:8px;
+
+cursor:pointer;
+
+}
+
+.icon-option img{
+
+width:24px;
+
+}
+
+.icon-option:hover{
+
+background:rgba(0,0,0,0.06);
+
+}
+
+body.dark .icon-option:hover{
+
+background:rgba(255,255,255,0.08);
+
+}
+
+body.dark .modal-content{
+background:#1e1e1e;
+color:white;
+}
+
+.hidden{
+display:none;
+}
+
+.modal-buttons{
+
+display:flex;
+gap:10px;
+
+justify-content:flex-end;
+
+margin-top:16px;
+
+}
+
+.btn-primary{
+
+background:#6b8f71;
+
+color:white;
+
+border:none;
+
+padding:10px 16px;
+
+border-radius:10px;
+
+cursor:pointer;
+
+}
+
+.btn-primary:hover{
+
+background:#5d7e64;
+
+}
+
+.btn-secondary{
+
+background:#e8e1d2;
+
+border:none;
+
+padding:10px 16px;
+
+border-radius:10px;
+
+cursor:pointer;
+
+}
+
+body.dark .btn-secondary{
+
+background:#3a3a3a;
+color:white;
+
+}
+
+.btn-danger{
+
+background:#c94c4c;
+
+color:white;
+
+border:none;
+
+padding:10px 16px;
+
+border-radius:10px;
+
+cursor:pointer;
+
+}
+  
+</style>
 
 </head>
 
 <body>
 
-<div class="topbar">
+<div class="container">
 
-<div class="user-left">
+<div class="top-bar">
+
+<h2>🍵 Calculadora Gong Fu Cha</h2>
+
+<button class="theme-btn" onclick="toggleDark()">
+<img id="themeIcon" src="icons/moon.svg" width="20">
+</button>
+
+</div>
+
+<div id="authSection">
+
+<input type="email" id="email" placeholder="Email">
+
+<input type="password" id="password" placeholder="Password">
+
+<button onclick="login()">Login</button>
+
+<button onclick="register()">Regístrate</button>
+
+<button onclick="googleLogin()" style="background:#db4437;color:white">Google</button>
+
+</div>
+
+<div id="app" class="hidden">
+
+<div class="user-menu">
+
 <span id="userEmail"></span>
-<button id="logoutBtn">Salir</button>
-</div>
 
-<button id="darkToggle"></button>
+<button onclick="logout()">Salir</button>
 
 </div>
 
-<h1>Calculadora de Té</h1>
+<h3>Mis Teteras</h3>
 
-<div id="loginScreen" class="screen">
+<div id="memorias" class="mem-grid"></div>
 
-<input id="email" placeholder="Correo">
-<input id="password" type="password" placeholder="Contraseña">
+<h3>Volumen</h3>
 
-<button id="loginBtn">Login</button>
-<button id="registerBtn">Registrarse</button>
-<button id="googleBtn">Google</button>
+<div class="volume-row">
+
+<input type="number" id="volumen" value="100" oninput="calcular()">
+
+<button class="add-btn" onclick="abrirModal()">+</button>
 
 </div>
 
-<div id="appScreen" class="screen hidden">
+<h3>Tipo de Té</h3>
 
-<div class="inputs">
+<select id="tipoTe" class="select-arrow" onchange="calcular()">
 
-<input id="volumen" type="number" placeholder="Volumen (ml)">
+<option value="5">Blanco (5g/110ml)</option>
+<option value="4">Verde (4g/110ml)</option>
+<option value="6">Amarillo (6g/110ml)</option>
+<option value="7">Oolong (7g/110ml)</option>
+<option value="8">Pu erh Sheng (8g/110ml)</option>
+<option value="10">Pu erh Shou (10g/110ml)</option>
+<option value="6">Negro (6g/110ml)</option>
 
-<select id="tipoTe">
-<option value="5">Blanco</option>
-<option value="4">Verde</option>
-<option value="6">Amarillo</option>
-<option value="7">Oolong</option>
-<option value="8">Pu erh Sheng</option>
-<option value="10">Pu erh Shou</option>
-<option value="6">Negro</option>
-<option value="manual">Ratio manual</option>
 </select>
 
-<input id="ratioManual" type="number" placeholder="g / 100ml" class="hidden">
+<div class="result-box">
 
-<input id="temperatura" type="number" placeholder="Temperatura">
+<div class="result-card">
+
+<strong id="gramos">0</strong>
+
+<span>Hojas de té</span>
 
 </div>
 
-<div id="resultado" class="resultado"></div>
+<div class="result-card">
 
-<h2>Memorias</h2>
+<strong id="agua">0</strong>
 
-<div id="memorias" class="memorias"></div>
+<span>Agua útil (ml)</span>
 
-<button id="addMemory">+</button>
+</div>
+
+<div class="result-card">
+
+<strong id="temp">-</strong>
+
+<span>Temperatura</span>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="footer">
+
+<p>Aprende más sobre el té en Instagram @naciondelte
+<span><a href="https://www.instagram.com/naciondelte/" target="_blank">Haz clic aquí</a></span>
+</p>
+
+<p>Únete a nuestra comunidad del té en Discord
+<span><a href="https://discord.gg/mjzhCXBRW" target="_blank">Haz clic aquí</a></span>
+</p>
+
+</div>
 
 </div>
 
 <div id="modal" class="modal hidden">
 
-<div class="modal-card">
+<div class="modal-content">
 
-<div class="icon-select">
+<h3>Guardar Tetera</h3>
 
-<button id="iconSelector">
+<div class="preview-card">
 
-<img id="previewIcon" class="hidden">
+<div class="icon-selector-wrapper">
 
-<span id="iconPlus">+</span>
+<button id="iconSelector" class="icon-selector-btn">
+
+<img id="previewIcon" src="" style="display:none">
+<span id="iconPlaceholder">+</span>
+<svg id="iconArrow" width="14" height="14" viewBox="0 0 24 24">
+<polyline points="6 9 12 15 18 9"
+stroke="currentColor"
+stroke-width="2"
+fill="none"/>
+</svg>
 
 </button>
 
-<div id="iconMenu" class="hidden">
+<div id="iconMenu" class="icon-menu hidden">
 
-<img src="icons/teapot.png" data-icon="teapot.png">
-<img src="icons/gaiwan.png" data-icon="gaiwan.png">
-<div data-icon="">+</div>
+<div class="icon-option" data-icon="teapot.png">
+<img src="icons/teapot.png">
+</div>
 
+<div class="icon-option" data-icon="gaiwan.png">
+<img src="icons/gaiwan.png">
+</div>
+
+<div class="icon-option" data-icon="">
+<span style="font-size:12px">✕</span>
 </div>
 
 </div>
 
-<input id="nombreMemoria" placeholder="Nombre">
+</div>
 
-<input id="volumenMemoria" type="number" placeholder="Volumen">
+<div class="preview-fields">
+
+<input id="nombreTetera" placeholder="Nombre de tetera">
+
+<input id="modalVol" type="number" placeholder="Volumen ml">
+
+</div>
+
+</div>
 
 <div class="modal-buttons">
 
-<button id="saveMemory">Aceptar</button>
-<button id="deleteMemory">Eliminar</button>
-<button id="cancelMemory">Cancelar</button>
+<button class="btn-primary" onclick="guardarMemoria()">
+Aceptar
+</button>
+
+<button class="btn-secondary" onclick="cerrarModal()">
+Cancelar
+</button>
+
+<button class="btn-danger" onclick="eliminarMemoria()">
+Eliminar
+</button>
 
 </div>
 
@@ -116,9 +821,322 @@
 
 </div>
 
-<div id="installBanner" class="hidden"></div>
+<script>
 
-<script src="app.js"></script>
+function toggleDark(){
+
+document.body.classList.toggle('dark');
+
+const dark=document.body.classList.contains('dark');
+
+document.getElementById("themeIcon").src=
+dark ? "icons/sun.svg" : "icons/moon.svg";
+
+localStorage.setItem('darkMode',dark);
+
+}
+
+if(localStorage.getItem('darkMode')==='true'){
+document.body.classList.add('dark');
+document.getElementById("themeIcon").src="icons/sun.svg";
+}
+
+</script>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup }
+
+from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc, query, orderBy }
+
+from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig={
+
+apiKey:"AIzaSyAnCT6glmf4n1zxzHJoHx4Z9l7yR0jju1I",
+authDomain:"calc-gong-fu.firebaseapp.com",
+projectId:"calc-gong-fu"
+
+};
+
+const appFirebase=initializeApp(firebaseConfig);
+
+const auth=getAuth(appFirebase);
+
+const db=getFirestore(appFirebase);
+
+const provider=new GoogleAuthProvider();
+
+let user=null;
+
+let memorias=[];
+
+let editId=null;
+
+onAuthStateChanged(auth,async(u)=>{
+
+if(u){
+
+user=u;
+
+authSection.classList.add("hidden");
+
+app.classList.remove("hidden");
+
+userEmail.innerText=u.email;
+
+cargarMemorias();
+
+}
+
+else{
+
+authSection.classList.remove("hidden");
+
+app.classList.add("hidden");
+
+}
+
+});
+
+window.login=()=>signInWithEmailAndPassword(auth,email.value,password.value);
+
+window.register=()=>createUserWithEmailAndPassword(auth,email.value,password.value);
+
+window.googleLogin=()=>signInWithPopup(auth,provider);
+
+window.logout=()=>signOut(auth);
+
+async function cargarMemorias(){
+
+memorias=[];
+
+const q=query(collection(db,"usuarios",user.uid,"teteras"),orderBy("orden"));
+
+const snap=await getDocs(q);
+
+snap.forEach(d=>memorias.push({...d.data(),id:d.id}));
+
+render();
+
+}
+
+function render(){
+
+const cont=document.getElementById("memorias");
+cont.innerHTML="";
+
+memorias.forEach(m=>{
+
+const div=document.createElement("div");
+div.className="mem-card";
+
+if(!m.icon){
+div.classList.add("no-icon");
+}
+
+if(m.icon){
+
+const icon=document.createElement("img");
+icon.src="icons/"+m.icon;
+icon.className="mem-icon";
+
+div.appendChild(icon);
+
+}
+
+const text=document.createElement("div");
+text.className="mem-text";
+
+const nombre=document.createElement("div");
+nombre.className="nombre";
+nombre.textContent=m.nombre;
+
+const volumen=document.createElement("div");
+volumen.className="volumen";
+volumen.textContent=m.vol+" ml";
+
+text.appendChild(nombre);
+text.appendChild(volumen);
+
+div.appendChild(text);
+
+div.onclick=()=>{
+document.getElementById("volumen").value=m.vol;
+calcular();
+};
+
+div.ondblclick=()=>abrirModalEdicion(m);
+
+cont.appendChild(div);
+
+});
+}
+
+window.abrirModal=()=>{
+
+editId=null;
+
+nombreTetera.value="";
+  
+modalVol.value=volumen.value;
+
+selectedIcon="";
+
+document.querySelectorAll(".icon-option").forEach(i=>i.classList.remove("selected"));
+
+document.getElementById("previewIcon").style.display="none";
+
+modal.classList.remove("hidden");
+
+}
+
+function abrirModalEdicion(m){
+
+editId=m.id;
+
+nombreTetera.value=m.nombre;
+  
+modalVol.value=m.vol;
+
+selectedIcon=m.icon || "";
+
+document.querySelectorAll(".icon-option").forEach(i=>{
+
+i.classList.remove("selected");
+
+if(i.dataset.icon===selectedIcon){
+  
+i.classList.add("selected");
+  
+}
+
+});
+
+const preview=document.getElementById("previewIcon");
+
+if(selectedIcon){
+preview.src="icons/"+selectedIcon;
+preview.style.display="block";
+}else{
+preview.style.display="none";
+}
+
+modal.classList.remove("hidden");
+
+}
+
+window.cerrarModal=()=>modal.classList.add("hidden");
+
+window.guardarMemoria=async()=>{
+
+const nombre=nombreTetera.value.trim();
+
+const vol=parseFloat(modalVol.value);
+
+const icon=selectedIcon;
+
+if(!nombre||!vol)return;
+
+if(editId){
+
+await updateDoc(doc(db,"usuarios",user.uid,"teteras",editId),{nombre,vol,icon});
+
+}
+
+else{
+
+await addDoc(collection(db,"usuarios",user.uid,"teteras"),{nombre,vol,icon,orden:memorias.length});
+
+}
+
+cerrarModal();
+
+cargarMemorias();
+
+}
+
+window.eliminarMemoria=async()=>{
+
+if(!editId)return;
+
+await deleteDoc(doc(db,"usuarios",user.uid,"teteras",editId));
+
+cerrarModal();
+
+cargarMemorias();
+
+}
+
+window.calcular=()=>{
+
+const vol=parseFloat(volumen.value);
+
+const ratio=parseFloat(tipoTe.value)/110;
+
+const desp=3.2;
+
+const gCalc=(vol*ratio)/(1+ratio*desp);
+
+const aCalc=vol-(gCalc*desp);
+
+gramos.innerText=gCalc.toFixed(2)+" g";
+
+agua.innerText=aCalc.toFixed(1)+" ml";
+
+temp.innerText="90°C";
+
+}
+
+calcular();
+
+let selectedIcon="";
+
+const iconBtn = document.getElementById("iconSelector");
+const iconMenu = document.getElementById("iconMenu");
+const preview = document.getElementById("previewIcon");
+
+if(iconBtn && iconMenu){
+
+iconBtn.onclick = () => {
+
+iconMenu.classList.toggle("hidden");
+
+};
+
+document.querySelectorAll(".icon-option").forEach(el=>{
+
+el.onclick = () => {
+
+selectedIcon = el.dataset.icon;
+
+if(preview){
+
+if(selectedIcon){
+
+preview.src="icons/"+selectedIcon;
+preview.style.display="block";
+
+}else{
+
+preview.style.display="none";
+
+}
+
+}
+
+iconMenu.classList.add("hidden");
+
+};
+
+});
+
+}
+</script>
 
 </body>
 </html>
