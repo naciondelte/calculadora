@@ -1084,6 +1084,8 @@ const gCalc=(vol*ratio)/(1+ratio*desp);
 
 const aCalc=vol-(gCalc*desp);
 
+const tipoTexto=tipoTe.options[tipoTe.selectedIndex].text;
+
 const temperaturas={
     "Blanco":"85-95°C",
     "Verde":"85°C",
@@ -1097,7 +1099,7 @@ gramos.innerText=gCalc.toFixed(2)+" g";
 
 agua.innerText=aCalc.toFixed(1)+" ml";
 
-temp.innerText=temperaturas;
+temp.innerText=temperaturas[tipoTexto]||"-";
 
 }
 
