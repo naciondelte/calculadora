@@ -696,13 +696,13 @@ cursor:pointer;
 
 <select id="tipoTe" class="select-arrow" onchange="calcular()">
 
-<option value="5">Blanco (5g/110ml)</option>
-<option value="4">Verde (4g/110ml)</option>
-<option value="6">Amarillo (6g/110ml)</option>
-<option value="7">Oolong (7g/110ml)</option>
-<option value="8">Pu erh Sheng (8g/110ml)</option>
-<option value="10">Pu erh Shou (10g/110ml)</option>
-<option value="6">Negro (6g/110ml)</option>
+<option value="5" data-temp="85-95°C">Blanco (5g/110ml)</option>
+<option value="4" data-temp="85°C">Verde (4g/110ml)</option>
+<option value="6"data-temp="80-90°C">Amarillo (6g/110ml)</option>
+<option value="7" data-temp="100°C">Oolong (7g/110ml)</option>
+<option value="8" data-temp="95°C">Pu erh Sheng (8g/110ml)</option>
+<option value="10" data-temp="100°C">Pu erh Shou (10g/110ml)</option>
+<option value="6" data-temp="90-95°C">Negro (6g/110ml)</option>
 
 </select>
 
@@ -1084,23 +1084,13 @@ const gCalc=(vol*ratio)/(1+ratio*desp);
 
 const aCalc=vol-(gCalc*desp);
 
-const tipoTexto=tipoTe.value;
-
-const temperaturas={
-    "Blanco (5g/110ml)":"85-95°C",
-    "Verde (4g/110ml)":"85°C",
-    "Amarillo (6g/110ml)":"85°C",
-    "Oolong (7g/110ml)":"100°C",
-    "Pu erh Sheng (8g/110ml)":"95°C",
-    "Pu erh Shou (10g/110ml)":"100°C",
-    "Negro (6g/110ml)":"90-95°C"
-  };
+const tempValor = tipoTe.options[tipoTe.selectedIndex].dataset.temp;
 
 gramos.innerText=gCalc.toFixed(2)+" g";
 
 agua.innerText=aCalc.toFixed(1)+" ml";
 
-temp.innerText=temperaturas[tipoTexto];
+temp.innerText = tempValor;
 
 }
 
